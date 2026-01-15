@@ -1,0 +1,8 @@
+[
+  {
+    "jobId": "c524b9cd-2cd3-41ee-ada5-9188d6c7635f",
+    "schedule": "0 8 * * *",
+    "mode": "schema-only",
+    "password": ""
+  }
+]

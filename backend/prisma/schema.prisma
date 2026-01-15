@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  username  String   @unique
+  roleId    Int
+  createdAt DateTime @default(now())
+  role      Role     @relation(fields: [roleId], references: [id])
+}
+
+model Role {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  description String?
+  permissions PermissionOnRole[]
+  users       User[]
+}
+
+model Permission {
+  id          Int                @id @default(autoincrement())
+  key         String             @unique
+  description String
+  roles       PermissionOnRole[]
+}
+
+model PermissionOnRole {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
+model Client {
+  id             Int             @id @default(autoincrement())
+  name           String
+  email          String?         @unique
+  phone          String?
+  address        String?
+  createdAt      DateTime        @default(now())
+  rtn            String          @unique
+  creditBalance  Float           @default(0)
+  creditDays     Int             @default(0)
+  creditLimit    Float           @default(0)
+  lastCreditDate DateTime?
+  updatedAt      DateTime?       @updatedAt
+  payments       ClientPayment[]
+  invoices       Invoice[]
+
+  @@map("Client")
+}
+
+model ClientPayment {
+  id              Int             @id @default(autoincrement())
+  clientId        Int
+  paymentMethodId Int
+  amount          Float
+  date            DateTime        @default(now())
+  client          Client          @relation(fields: [clientId], references: [id])
+  payment_method  payment_methods @relation(fields: [paymentMethodId], references: [id])
+
+  @@map("ClientPayment")
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String?    @unique
+  phone     String?
+  address   String?
+  createdAt DateTime   @default(now())
+  rtn       String
+  purchases Purchase[]
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String
+  sku           String
+  quantity      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  categoryId    Int?
+  taxId         Int
+  storeId       Int?
+  priceBase     Float          @default(0)
+  priceFinal    Float          @default(0)
+  costBase      Float          @default(0)
+  costFinal     Float          @default(0)
+  invoiceItems  InvoiceItem[]
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  store         Store?         @relation(fields: [storeId], references: [id])
+  tax           Tax            @relation(fields: [taxId], references: [id])
+  purchaseItems PurchaseItem[]
+
+  @@unique([sku, storeId])
+}
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  total           Float
+  createdAt       DateTime      @default(now())
+  clientId        Int
+  cambio          Float?
+  formasPago      Json?
+  importeRecibido Float?
+  folio           String        @default("")
+  estado          String?       @default("EMITIDA") @db.VarChar(20)
+  cajaId          Int?
+  storeId         Int
+  caja            CashRegister? @relation(fields: [cajaId], references: [id])
+  client          Client        @relation(fields: [clientId], references: [id])
+  store           Store         @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  items           InvoiceItem[]
+
+  @@unique([cajaId, folio], map: "unique_folio_per_caja")
+}
+
+model InvoiceItem {
+  id         Int     @id @default(autoincrement())
+  invoiceId  Int
+  productId  Int
+  quantity   Int
+  subtotal   Float
+  priceBase  Float
+  priceFinal Float
+  invoice    Invoice @relation(fields: [invoiceId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId])
+  @@index([productId])
+}
+
+model Purchase {
+  id         Int            @id @default(autoincrement())
+  total      Float
+  createdAt  DateTime       @default(now())
+  supplierId Int
+  folio      String         @default("")
+  estado     String?        @default("EMITIDA") @db.VarChar(20)
+  cajaId     Int?
+  storeId    Int
+  formasPago Json?
+  caja       CashRegister?  @relation(fields: [cajaId], references: [id])
+  store      Store          @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  supplier   Supplier       @relation(fields: [supplierId], references: [id])
+  items      PurchaseItem[]
+
+  @@unique([cajaId, folio], name: "unique_folio_per_caja_purchase", map: "unique_folio_per_caja_purchase")
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  purchaseId Int
+  productId  Int
+  quantity   Int
+  subtotal   Float
+  costBase   Float
+  costFinal  Float
+  product    Product  @relation(fields: [productId], references: [id])
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+
+  @@index([purchaseId])
+  @@index([productId])
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model payment_methods {
+  id          Int             @id @default(autoincrement())
+  clave       String          @unique @db.VarChar(10)
+  descripcion String          @db.VarChar(50)
+  tipo        String          @db.VarChar(30)
+  monedaId    Int
+  payments    ClientPayment[]
+  moneda      Currency        @relation(fields: [monedaId], references: [id])
+
+  @@map("payment_methods")
+}
+
+model Currency {
+  id              Int               @id @default(autoincrement())
+  clave           String            @unique @db.VarChar(10)
+  descripcion     String            @db.VarChar(50)
+  abreviatura     String            @db.VarChar(10)
+  tipoCambio      Float
+  fecha           DateTime          @updatedAt
+  payment_methods payment_methods[]
+}
+
+model Tax {
+  id          Int       @id @default(autoincrement())
+  clave       String    @unique
+  descripcion String
+  percent     Float
+  products    Product[]
+}
+
+model Store {
+  id         Int            @id @default(autoincrement())
+  clave      String         @unique
+  nombre     String
+  direccion  String
+  telefono   String
+  cajas      CashRegister[]
+  invoices   Invoice[]
+  inventario Product[]
+  purchases  Purchase[]
+}
+
+model CashRegister {
+  id           Int        @id @default(autoincrement())
+  storeId      Int
+  descripcion  String
+  formatoCFDI  String
+  formatoNota  String
+  numeroDeCaja Int
+  store        Store      @relation(fields: [storeId], references: [id])
+  invoices     Invoice[]
+  purchases    Purchase[]
+}
+
+model FolioCounter {
+  caja_id      Int
+  tipo         String @db.VarChar(20)
+  ultimo_folio Int?   @default(0)
+
+  @@id([caja_id, tipo])
+  @@map("folio_counter")
+}
+
+model SeedHistory {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  executedAt DateTime @default(now())
+}

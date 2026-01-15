@@ -1,0 +1,67 @@
+# ----------------------------
+# Node / JavaScript
+# ----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ----------------------------
+# Prisma
+# ----------------------------
+prisma/migrations/
+prisma/dev.db
+.env
+.env.production
+.env.local
+*.sqlite
+
+# ----------------------------
+# Compilación / build
+# ----------------------------
+dist/
+build/
+package/
+installer/package/
+installer/dist/
+installer/generated/
+
+# ----------------------------
+# Electron / empaquetado
+# ----------------------------
+app.asar
+app.asar.unpacked/
+win-unpacked/
+linux-unpacked/
+*.asar
+*.dll
+*.so
+*.exe
+*.zip
+*.tar.gz
+
+# ----------------------------
+# PostgreSQL portable (NO subir)
+# ----------------------------
+resources/postgres/
+backend/resources/postgres/
+resources/node/
+backend/resources/node/
+
+# ----------------------------
+# Backups y datos sensibles
+# ----------------------------
+*.backup
+*.db
+*.bak
+logs/
+*.log
+/tmp/
+temp/
+
+# ----------------------------
+# Sistema
+# ----------------------------
+.DS_Store
+Thumbs.db
