@@ -4,10 +4,12 @@ const backupAPI = require("./backup.api");
 const backendAPI = require("./backend.api");
 const appAPI = require("./app.api");
 const loaderAPI = require("./loader.api");
+const updateAPI = require("./update.api")
 
 contextBridge.exposeInMainWorld("api", {
   ...backupAPI,
   ...backendAPI,
   ...appAPI,
   ...loaderAPI,
+  ...updateAPI,
 });

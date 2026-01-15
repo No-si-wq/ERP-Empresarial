@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
 
 const isDev = !app.isPackaged;
 
@@ -22,6 +24,47 @@ if (app.isPackaged) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
+  });
+}
+
+log.transports.file.level = "info";
+autoUpdater.logger = log;
+autoUpdater.autoDownload = false;
+
+function initAutoUpdater() {
+  if (!app.isPackaged) return;
+
+  autoUpdater.on("checking-for-update", () => {
+    notifyRenderer("update-status", { status: "checking" });
+  });
+
+  autoUpdater.on("update-available", info => {
+    notifyRenderer("update-status", {
+      status: "available",
+      version: info.version
+    });
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    notifyRenderer("update-status", { status: "none" });
+  });
+
+  autoUpdater.on("download-progress", progress => {
+    notifyRenderer("update-progress", {
+      percent: Math.round(progress.percent),
+      speed: progress.bytesPerSecond,
+    });
+  });
+
+  autoUpdater.on("update-downloaded", () => {
+    notifyRenderer("update-status", { status: "downloaded" });
+  });
+
+  autoUpdater.on("error", err => {
+    notifyRenderer("update-status", {
+      status: "error",
+      message: err.message
+    });
   });
 }
 
@@ -241,6 +284,22 @@ ipcMain.handle("check-backend-health", async () => {
   return await checkBackendHealth(backendInfo.port);
 });
 
+ipcMain.handle("check-for-updates", async () => {
+  if (!app.isPackaged) return { dev: true };
+  return autoUpdater.checkForUpdates();
+});
+
+ipcMain.handle("download-update", async () => {
+  return autoUpdater.downloadUpdate();
+});
+
+ipcMain.handle("install-update", async () => {
+  if (backendInfo?.port) {
+    // valida backend estado
+  }
+  autoUpdater.quitAndInstall();
+});
+
 ipcMain.handle("select-backup-path", async (event, { defaultPath, password }) => {
   try {
     const projectRoot = app.isPackaged
@@ -334,6 +393,9 @@ app.whenReady().then(async () => {
     createLoadingWindow();
     await startBackend();
     createMainWindow();
+
+    initAutoUpdater();
+    autoUpdater.checkForUpdates();
   } catch (err) {
     dialog.showErrorBox("Error de inicio", err.message);
     app.quit();
