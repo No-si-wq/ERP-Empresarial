@@ -54,9 +54,6 @@ async function seed() {
         "/tiendas",
         "/usuarios",
         "/formas-pago",
-        "/dispositivos",
-        "/lineas",
-        "/departamentos",
         "/categorias",
         "/monedas",
         "/impuestos",
@@ -70,6 +67,7 @@ async function seed() {
         "/restore",
         "/permisos",
         "/scheduled-backups",
+        "/updates",
         "PERMISSION_DELETE_ROLE",
       ];
 

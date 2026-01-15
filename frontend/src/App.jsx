@@ -26,6 +26,7 @@ import BackupButton from './pages/BackupButton';
 import RestoreButton from './pages/RestoreButton';
 import Permisos from './pages/Permissions';
 import ScheduledBackups from './pages/ScheduleBackups';
+import UpdatePanel from './pages/UpdatePanel';
 
 function App() {
 
@@ -54,6 +55,7 @@ function App() {
           <Route path='/restore' element={<PrivateRoute><RestoreButton/></PrivateRoute>} />
           <Route path='/permisos' element={<PrivateRoute><Permisos/></PrivateRoute>} />
           <Route path='/scheduled-backups' element={<PrivateRoute><ScheduledBackups/></PrivateRoute>} />
+          <Route path='/updates' element={<PrivateRoute><UpdatePanel/></PrivateRoute>} />
           {/* Default route */}
           <Route 
             path="/home" 

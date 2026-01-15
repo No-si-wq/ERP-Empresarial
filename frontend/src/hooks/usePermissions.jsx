@@ -14,9 +14,6 @@ import {
   FileTextOutlined,
   ShopOutlined,
   CreditCardOutlined,
-  DesktopOutlined,
-  ApartmentOutlined,
-  TagsOutlined,
   GlobalOutlined,
   FileOutlined,
   StockOutlined,
@@ -25,6 +22,7 @@ import {
   SaveOutlined,
   RollbackOutlined,
   CloudUploadOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 
 const rawModules = [
@@ -88,7 +86,8 @@ const rawModules = [
     submenu: [
       { key: "backup", title: "Generacion de Respaldos", icon: <SaveOutlined />, path: "/backup" },
       { key: "restore", title: "Restauracion de Respaldos", icon: <RollbackOutlined />, path: "/restore" },
-      { key: "scheduled-backups", title: "Jobs de respaldos programados", icon: <CloudUploadOutlined />, path: "/scheduled-backups" }
+      { key: "scheduled-backups", title: "Jobs de respaldos programados", icon: <CloudUploadOutlined />, path: "/scheduled-backups" },
+      { key: "updates", title: "Buscar por actualizaciones", icon: <ReloadOutlined />, path: "/updates" },
     ]
   },
 ];
