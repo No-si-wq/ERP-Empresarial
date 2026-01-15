@@ -384,20 +384,25 @@ ipcMain.handle("select-restore-file", async () => {
   return canceled ? null : filePaths[0];
 });
 
-ipcMain.handle("get-env", () => ({
-  VITE_API_URL: process.env.VITE_API_URL,
-}));
-
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   try {
+    createMainWindow();      
     createLoadingWindow();
-    await startBackend();
-    createMainWindow();
+
+    startBackend()
+      .then(() => {
+        console.log("Backend iniciado");
+      })
+      .catch(err => {
+        console.error("Error backend:", err);
+        dialog.showErrorBox("Error backend", err.message);
+      });
 
     initAutoUpdater();
     autoUpdater.checkForUpdates();
+
   } catch (err) {
-    dialog.showErrorBox("Error de inicio", err.message);
+    dialog.showErrorBox("Error crítico", err.message);
     app.quit();
   }
 });
