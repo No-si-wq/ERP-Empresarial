@@ -5,13 +5,22 @@ function escapeIdentifier(value) {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
+function isValidDatabaseUrl(url) {
+  return (
+    typeof url === "string" &&
+    url.startsWith("postgresql://") &&
+    url.length > 20
+  );
+}
+
 async function ensureDatabaseExists() {
-  if (process.env.DATABASE_URL) {
-    console.log("DATABASE_URL ya existe. No se genera base de datos.");
-    return;
+  const dbUrl = process.env.DATABASE_URL
+
+  if (isValidDatabaseUrl(dbUrl)) {
+    console.log("DATABASE_URL valida detectada. No se genera base de datos.");
   }
 
-  const { DB_HOST, DB_PORT } = process.env;
+  const { DB_HOST, DB_PORT, DB_ADMIN_USER, DB_ADMIN_PASSWORD } = process.env;
 
   if (!DB_HOST || !DB_PORT) {
     throw new Error("DB_HOST y DB_PORT deben estar definidos");
@@ -24,8 +33,8 @@ async function ensureDatabaseExists() {
   const newDatabase = `o2db_${crypto.randomBytes(4).toString("hex")}`;
 
   const adminClient = new Client({
-    user: "postgres",
-    password: process.env.DB_PASSWORD,
+    user: DB_ADMIN_USER || "postgres",
+    password: DB_ADMIN_PASSWORD,
     host: DB_HOST,
     port: Number(DB_PORT),
   });
