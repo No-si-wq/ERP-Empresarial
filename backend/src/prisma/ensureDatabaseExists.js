@@ -21,7 +21,7 @@ async function ensureDatabaseExists() {
 
   const adminClient = new Client({
     user: "postgres",
-    password: "postgres",
+    password: "mi_contrasenia",
     host: env.DB_HOST,
     port: Number(env.DB_PORT),
   });
@@ -29,7 +29,7 @@ async function ensureDatabaseExists() {
   try {
     await adminClient.connect();
 
-    await adminClient.query(`CREATE USER ${newUser} WITH PASSWORD '${newPassword}'`);
+    await adminClient.query(`CREATE USER ${newUser} WITH PASSWORD $1`, [newPassword]);
     await adminClient.query(`CREATE DATABASE ${newDatabase} OWNER ${newUser}`);
 
     const databaseUrl =

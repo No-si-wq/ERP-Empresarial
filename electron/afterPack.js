@@ -41,11 +41,6 @@ exports.default = async function (context) {
   );
 
   await fs.copy(
-    path.join(__dirname, "../backend/node_modules/dotenv"),
-    path.join(backendNodeModules, "dotenv")
-  );
-
-  await fs.copy(
     path.join(__dirname, "../frontend/dist"),
     path.join(frontendDest, "dist")
   );
