@@ -193,7 +193,6 @@ function createLoadingWindow() {
     show: true,
     frame: false,
     resizable: false,
-    alwaysOnTop: true,
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, "preload", "loader.api.js"),
