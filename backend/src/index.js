@@ -4,7 +4,7 @@ const app = require("./app");
 const ensureDatabaseExists = require("./prisma/ensureDatabaseExists");
 const runPrismaMigrations = require("./prisma/runPrismaMigrations");
 const seed = require("./prisma/seed");
-const { loadEnv, applyEnv } = require("./env");
+const { applyEnv } = require("./env");
 const installEnv = require("./envInstaller");
 const cryptoEnv = require("./cryptoEnv");
 

@@ -20,6 +20,8 @@ exports.default = async function (context) {
         if (src.includes("node_modules")) return false;
         if (src.endsWith(".env")) return false;
         if (src.endsWith(".env.production")) return false;
+        if (src.includes("logs")) return false;
+        if (src.includes("test")) return false;
         return true;
       },
     }
@@ -39,6 +41,11 @@ exports.default = async function (context) {
   );
 
   await fs.copy(
+    path.join(__dirname, "../backend/node_modules/dotenv"),
+    path.join(backendNodeModules, "dotenv")
+  );
+
+  await fs.copy(
     path.join(__dirname, "../frontend/dist"),
     path.join(frontendDest, "dist")
   );
@@ -48,5 +55,5 @@ exports.default = async function (context) {
     assetsDest
   );
 
-  console.log("Backend, Frontend y Assets copiados correctamente");
+  console.log("Backend (Prisma + dotenv), Frontend y Assets listos");
 };

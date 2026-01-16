@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { Client } = require("pg");
 const crypto = require("crypto");
 

@@ -215,6 +215,9 @@ function createLoadingWindow() {
       </body>
     `)
   );
+  loadingWindow.once("ready-to-show", () => {
+    loadingWindow.show();
+  });
 }
 
 function createMainWindow() {
@@ -408,10 +411,12 @@ app.whenReady().then(() => {
 
     createMainWindow();
 
-    startBackend().catch(err => {
-      console.error("Error backend:", err);
-      dialog.showErrorBox("Error backend", err.message);
-      app.quit();
+    setImmediate(() => {
+      startBackend().catch(err => {
+        console.error("Error backend:", err);
+        dialog.showErrorBox("Error backend", err.message);
+        app.quit();
+      });
     });
 
     if (app.isPackaged) {
