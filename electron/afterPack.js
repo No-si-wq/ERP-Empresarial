@@ -8,7 +8,6 @@ exports.default = async function (context) {
   const frontendDest = path.join(resourcesPath, "frontend");
   const assetsDest = path.join(resourcesPath, "assets");
 
-  // 🧹 Limpiar destinos
   await fs.remove(backendDest);
   await fs.remove(frontendDest);
   await fs.remove(assetsDest);
@@ -18,7 +17,6 @@ exports.default = async function (context) {
     backendDest,
     {
       filter: (src) => {
-        if (src.includes("node_modules")) return false;
 
         if (src.endsWith("package.json")) return false;
         if (src.endsWith("package-lock.json")) return false;
@@ -31,19 +29,6 @@ exports.default = async function (context) {
         return true;
       },
     }
-  );
-
-  const backendNodeModules = path.join(backendDest, "node_modules");
-  await fs.ensureDir(backendNodeModules);
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/@prisma"),
-    path.join(backendNodeModules, "@prisma")
-  );
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/.prisma"),
-    path.join(backendNodeModules, ".prisma")
   );
 
   await fs.copy(
