@@ -76,14 +76,6 @@ function notifyRenderer(channel, payload) {
   }
 }
 
-function flushPendingMessages() {
-  if (!mainWindow?.webContents) return;
-  pendingMessages.forEach(m =>
-    mainWindow.webContents.send(m.channel, m.payload)
-  );
-  pendingMessages = [];
-}
-
 function getInstallStatePath() {
   return path.join(app.getPath("userData"), "install-state.json");
 }
@@ -172,13 +164,18 @@ async function startBackend() {
     backendServer.once("error", reject);
   });
 
-   const address = backendServer.address();
-    const port = address?.port;
+  const address = backendServer.address();
+  const port = address?.port;
 
   notifyRenderer("backend-status", { status: "up" });
   notifyRenderer("backend-ready", { port });
 
   backendInfo = { port };
+
+  loadingWindow?.close();
+  loadingWindow = null;
+
+  mainWindow.show();
 
   return backendServer;
 }
@@ -188,9 +185,12 @@ const iconPath = isDev
   : path.join(process.resourcesPath, "assets/favicon.png");
 
 function createLoadingWindow() {
+  if (loadingWindow) return;
+
   loadingWindow = new BrowserWindow({
     width: 420,
     height: 220,
+    show: true,
     frame: false,
     resizable: false,
     alwaysOnTop: true,
@@ -202,15 +202,19 @@ function createLoadingWindow() {
     },
   });
 
-  loadingWindow.loadURL(`
-    data:text/html,
-    <body style="display:flex;align-items:center;justify-content:center">
-      <h3 id="status">Iniciando...</h3>
-      <script>
-        window.loader.onStatus(t => status.innerText = t);
-      </script>
-    </body>
-  `);
+  loadingWindow.loadURL(
+    "data:text/html;charset=utf-8," +
+    encodeURIComponent(`
+      <body style="display:flex;align-items:center;justify-content:center;font-family:sans-serif">
+        <h3 id="status">Iniciando…</h3>
+        <script>
+          window.loader.onStatus(t => {
+            document.getElementById("status").innerText = t;
+          });
+        </script>
+      </body>
+    `)
+  );
 }
 
 function createMainWindow() {
@@ -227,16 +231,30 @@ function createMainWindow() {
     },
   });
 
-  const url = isDev
-    ? "http://localhost:5173"
-    : `file://${path.join(__dirname, "../frontend/dist/index.html")}`;
+  mainWindow.webContents.on("did-fail-load", (_, code, desc) => {
+    console.error("did-fail-load:", code, desc);
+  });
 
-  mainWindow.loadURL(url);
+  mainWindow.webContents.on("render-process-gone", (_, details) => {
+    console.error("renderer gone:", details);
+  });
+
+  if (isDev) {
+    const devUrl = "http://localhost:5173";
+    mainWindow.loadURL(devUrl);
+  } else {
+    const indexPath = path.join(
+      process.resourcesPath, "frontend", "dist", "index.html");
+
+    mainWindow.loadFile(indexPath);
+  }
+
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
-    flushPendingMessages();
-    loadingWindow?.close();
-    loadingWindow = null;
+  });
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
   });
 }
 
@@ -386,23 +404,24 @@ ipcMain.handle("select-restore-file", async () => {
 
 app.whenReady().then(() => {
   try {
-    createMainWindow();      
     createLoadingWindow();
 
-    startBackend()
-      .then(() => {
-        console.log("Backend iniciado");
-      })
-      .catch(err => {
-        console.error("Error backend:", err);
-        dialog.showErrorBox("Error backend", err.message);
-      });
+    createMainWindow();
 
-    initAutoUpdater();
-    autoUpdater.checkForUpdates();
+    startBackend().catch(err => {
+      console.error("Error backend:", err);
+      dialog.showErrorBox("Error backend", err.message);
+      app.quit();
+    });
+
+    if (app.isPackaged) {
+      initAutoUpdater();
+      autoUpdater.checkForUpdates();
+    }
 
   } catch (err) {
-    dialog.showErrorBox("Error crítico", err.message);
+    console.error("Error crítico de arranque:", err);
+    dialog.showErrorBox("Error de inicio", err.message);
     app.quit();
   }
 });

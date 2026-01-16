@@ -20,7 +20,7 @@ exports.default = async function (context) {
         if (src.endsWith(".env")) return false;
         if (src.endsWith(".env.production")) return false;
         if (src.includes("node_modules/.cache")) return false;
-        if (src.includes(".git")) return false;
+        if (src.includes("node_modules/.prisma/client")) return true;
 
         return true;
       },
@@ -30,6 +30,11 @@ exports.default = async function (context) {
   await fs.copy(
     path.join(__dirname, "../frontend/dist"),
     path.join(frontendDest, "dist")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../assets"),
+    assetsDest
   );
 
   console.log("Backend y Frontend copiados a resources");

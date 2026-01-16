@@ -1,6 +1,6 @@
 {
   "name": "o2-systems",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Aplicación de escritorio ERP",
   "main": "electron/main.js",
   "author": "Owen Daniel de Jesus Lopez",
@@ -37,7 +37,8 @@
     },
     "asar": true,
     "files": [
-      "electron/**/*"
+      "electron/**/*",
+      "package.json"
     ],
     "afterPack": "electron/afterPack.js",
     "win": {
