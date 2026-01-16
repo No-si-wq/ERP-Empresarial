@@ -17,14 +17,25 @@ exports.default = async function (context) {
     backendDest,
     {
       filter: (src) => {
+        if (src.includes("node_modules")) return false;
         if (src.endsWith(".env")) return false;
         if (src.endsWith(".env.production")) return false;
-        if (src.includes("node_modules/.cache")) return false;
-        if (src.includes("node_modules/.prisma/client")) return true;
-
         return true;
       },
     }
+  );
+
+  const backendNodeModules = path.join(backendDest, "node_modules");
+  await fs.ensureDir(backendNodeModules);
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/@prisma"),
+    path.join(backendNodeModules, "@prisma")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/.prisma"),
+    path.join(backendNodeModules, ".prisma")
   );
 
   await fs.copy(
@@ -37,5 +48,5 @@ exports.default = async function (context) {
     assetsDest
   );
 
-  console.log("Backend y Frontend copiados a resources");
+  console.log("Backend, Frontend y Assets copiados correctamente");
 };
