@@ -4,6 +4,21 @@ const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
 
+log.transports.file.level = "info";
+log.transports.file.resolvePathFn = () => {
+  return path.join(app.getPath("userData"), "startup.log");
+};
+
+process.on("uncaughtException", (err) => {
+  log.error("UNCAUGHT", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  log.error("REJECTION", err);
+});
+
+log.info("App Starting");
+
 const isDev = !app.isPackaged;
 
 let mainWindow = null;
@@ -11,6 +26,7 @@ let loadingWindow = null;
 let backendServer = null;
 let pendingMessages = [];
 let backendInfo = null;
+let backendProcess;
 
 if (app.isPackaged) {
   const gotLock = app.requestSingleInstanceLock();
@@ -82,7 +98,10 @@ function getInstallStatePath() {
 
 function isSeedAlreadyRun() {
   try {
-    return JSON.parse(fs.readFileSync(getInstallStatePath(), "utf8"))?.seedCompleted;
+    const state = JSON.parse(
+      fs.readFileSync(getInstallStatePath(), "utf8")
+    );
+    return state.seedCompleted === true;
   } catch {
     return false;
   }
@@ -91,7 +110,15 @@ function isSeedAlreadyRun() {
 function markSeedAsCompleted() {
   fs.writeFileSync(
     getInstallStatePath(),
-    JSON.stringify({ seedCompleted: true, completedAt: new Date() }, null, 2)
+    JSON.stringify(
+      { 
+        seedCompleted: true, 
+        completedAt: new Date(), 
+        appVersion: app.getVersion(), 
+      },
+      null, 
+      2
+    )
   );
 }
 
@@ -427,6 +454,12 @@ app.whenReady().then(() => {
     console.error("Error crítico de arranque:", err);
     dialog.showErrorBox("Error de inicio", err.message);
     app.quit();
+  }
+});
+
+app.on("before-quit", () => {
+  if (backendProcess) {
+    backendProcess.kill();
   }
 });
 

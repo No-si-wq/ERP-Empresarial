@@ -8,6 +8,7 @@ exports.default = async function (context) {
   const frontendDest = path.join(resourcesPath, "frontend");
   const assetsDest = path.join(resourcesPath, "assets");
 
+  // 🧹 Limpiar destinos
   await fs.remove(backendDest);
   await fs.remove(frontendDest);
   await fs.remove(assetsDest);
@@ -18,10 +19,15 @@ exports.default = async function (context) {
     {
       filter: (src) => {
         if (src.includes("node_modules")) return false;
+
+        if (src.endsWith("package.json")) return false;
+        if (src.endsWith("package-lock.json")) return false;
+
         if (src.endsWith(".env")) return false;
         if (src.endsWith(".env.production")) return false;
-        if (src.includes("logs")) return false;
-        if (src.includes("test")) return false;
+
+        if (src.endsWith(".gitignore")) return false;
+
         return true;
       },
     }
@@ -50,5 +56,5 @@ exports.default = async function (context) {
     assetsDest
   );
 
-  console.log("Backend (Prisma + dotenv), Frontend y Assets listos");
+  console.log("Producción limpia: backend mínimo, frontend y assets OK");
 };
