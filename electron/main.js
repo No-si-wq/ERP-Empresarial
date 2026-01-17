@@ -294,13 +294,22 @@ ipcMain.handle("get-backend-info", () => {
 });
 
 ipcMain.handle("rotate-jwt-secret", async () => {
-  const script = path.join(
-    process.resourcesPath,
-    "backend",
-    "src",
-    "scripts",
-    "rotateJwtSecret.js"
-  );
+  const script = app.isPackaged
+    ? path.join(
+        process.resourcesPath,
+        "backend",
+        "src",
+        "scripts",
+        "rotateJwtSecret.js"
+      )
+    : path.join(
+        __dirname,
+        "..",
+        "backend",
+        "src",
+        "scripts",
+        "rotateJwtSecret.js"
+      );
 
   await new Promise((resolve, reject) => {
     const child = require("child_process").spawn(
