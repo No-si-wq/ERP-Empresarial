@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
+const Module = require("module");
 
 log.transports.file.level = "info";
 log.transports.file.resolvePathFn = () => {
@@ -24,6 +25,7 @@ const isDev = !app.isPackaged;
 let mainWindow = null;
 let loadingWindow = null;
 let backendServer = null;
+let backend = null;
 let pendingMessages = [];
 let backendInfo = null;
 let backendProcess;
@@ -131,6 +133,18 @@ async function checkBackendHealth(port) {
   }
 }
 
+function prepareBackendResolver() {
+  if (app.isPackaged) {
+    const backendNodeModules = path.join(
+      process.resourcesPath,
+      "backend",
+      "node_modules"
+    );
+
+    Module.globalPaths.push(backendNodeModules);
+  }
+}
+
 function requireBackendModule() {
   if (app.isPackaged) {
     return require(
@@ -143,10 +157,13 @@ function requireBackendModule() {
   );
 }
 
-const backend = requireBackendModule();
-
 async function startBackend() {
   if (backendServer) return backendServer;
+
+  if (!backend) {
+    prepareBackendResolver();
+    backend = requireBackendModule();
+  }
 
   const userDataPath = app.getPath("userData");
   const envBasePath = path.join(userDataPath, ".env.production");
