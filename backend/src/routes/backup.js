@@ -6,11 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const { CronExpressionParser } = require("cron-parser");
 const stream = require("stream");
-const dotenv = require("dotenv");
 const which = require("which");
-
-const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env";
-dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const router = express.Router();
 

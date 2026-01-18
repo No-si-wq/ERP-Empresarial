@@ -3,7 +3,6 @@ const path = require("path");
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
-const Module = require("module");
 
 log.transports.file.level = "info";
 log.transports.file.resolvePathFn = () => {
@@ -133,19 +132,6 @@ async function checkBackendHealth(port) {
   }
 }
 
-function prepareBackendResolver() {
-  if (!app.isPackaged) return;
-
-  const backendNodeModules = path.join(
-    process.resourcesPath,
-    "backend",
-    "node_modules"
-  );
-
-  if (!Module.globalPaths.includes(backendNodeModules)) {
-    Module.globalPaths.push(backendNodeModules);
-  }
-}
 
 function requireBackendModule() {
   if (app.isPackaged) {
@@ -162,7 +148,6 @@ function requireBackendModule() {
 async function startBackend() {
   if (backendServer) return backendServer;
 
-  prepareBackendResolver();
   backend = requireBackendModule();
 
   const userDataPath = app.getPath("userData");
