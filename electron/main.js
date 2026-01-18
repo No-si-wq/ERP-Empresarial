@@ -133,14 +133,19 @@ async function checkBackendHealth(port) {
   }
 }
 
-function prepareBackendResolver() {
-  if (app.isPackaged) {
-    const backendNodeModules = path.join(
-      process.resourcesPath,
-      "backend",
-      "node_modules"
-    );
+const Module = require("module");
+const path = require("path");
 
+function prepareBackendResolver() {
+  if (!app.isPackaged) return;
+
+  const backendNodeModules = path.join(
+    process.resourcesPath,
+    "backend",
+    "node_modules"
+  );
+
+  if (!Module.globalPaths.includes(backendNodeModules)) {
     Module.globalPaths.push(backendNodeModules);
   }
 }
@@ -160,10 +165,8 @@ function requireBackendModule() {
 async function startBackend() {
   if (backendServer) return backendServer;
 
-  if (!backend) {
-    prepareBackendResolver();
-    backend = requireBackendModule();
-  }
+  prepareBackendResolver();
+  backend = requireBackendModule();
 
   const userDataPath = app.getPath("userData");
   const envBasePath = path.join(userDataPath, ".env.production");
