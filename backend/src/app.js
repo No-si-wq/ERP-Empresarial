@@ -1,5 +1,3 @@
-const path = require('path');
-
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -8,7 +6,7 @@ const prisma = require('./prisma');
 
 const app = express();
 
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'production' : 'development'));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 

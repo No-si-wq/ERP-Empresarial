@@ -31,6 +31,7 @@ module.exports = function installEnv(envPath) {
     "DB_PORT=5432",
     "DB_ADMIN_USER=postgres",
     "DB_ADMIN_PASSWORD=mi_contrasenia",
+    "NODE_ENV=production",
     "",
     "# DB runtime",
     "DATABASE_URL=",
