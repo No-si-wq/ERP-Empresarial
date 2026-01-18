@@ -133,9 +133,6 @@ async function checkBackendHealth(port) {
   }
 }
 
-const Module = require("module");
-const path = require("path");
-
 function prepareBackendResolver() {
   if (!app.isPackaged) return;
 
