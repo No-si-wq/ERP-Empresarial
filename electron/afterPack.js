@@ -26,9 +26,21 @@ exports.default = async function (context) {
 
         if (src.endsWith(".gitignore")) return false;
 
+        if (src.includes("node_modules")) return false;
+
         return true;
       },
     }
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/@prisma"),
+    path.join(backendDest, "node_modules/@prisma")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/.prisma"),
+    path.join(backendDest, "node_modules/.prisma")
   );
 
   await fs.copy(

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "echo backend listo",
+    "build": "node build-electron.js",
     "pre:migrate": "node scripts/preMigrate.js",
     "migrate": "npm run pre:migrate && prisma migrate deploy"
   },
@@ -24,7 +24,6 @@
     "buffer": "^6.0.3",
     "cors": "^2.8.5",
     "cron-parser": "^5.4.0",
-    "dotenv": "^16.6.1",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
@@ -43,9 +42,9 @@
   },
   "devDependencies": {
     "@types/react": "^19.1.8",
+    "esbuild": "^0.27.2",
     "nodemon": "^3.1.10",
-    "prisma": "^6.12.0",
-    "esbuild": "^0.27.2"
+    "prisma": "^6.12.0"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

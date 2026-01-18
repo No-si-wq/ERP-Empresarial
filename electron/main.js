@@ -136,7 +136,7 @@ async function checkBackendHealth(port) {
 function requireBackendModule() {
   if (app.isPackaged) {
     return require(
-      path.join(process.resourcesPath, "backend", "src", "index.js")
+      path.join(process.resourcesPath, "backend", "dist", "backend.cjs")
     );
   }
 
