@@ -177,10 +177,6 @@ async function startBackend() {
     decryptFileToEnv(encEnvPath);
     applyEnv(process.env);
 
-    if (!fs.existsSync(appDataDir)) {
-      fs.mkdirSync(appDataDir, { recursive: true });
-    }
-
     if (!process.env.JWT_SECRET_CURRENT) {
       throw new Error("JWT_SECRET_CURRENT no definido en producción");
     }
