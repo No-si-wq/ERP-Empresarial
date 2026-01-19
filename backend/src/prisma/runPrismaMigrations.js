@@ -1,21 +1,37 @@
-const { PrismaClient } = require("@prisma/client");
+const { execFile } = require("child_process");
+const path = require("path");
 
-async function verifyPrismaConnection() {
+function runPrismaMigrations() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL no definido");
   }
 
-  console.log("Verificando conexión Prisma…");
+  console.log("Ejecutando migraciones Prisma…");
 
-  const prisma = new PrismaClient();
+  return new Promise((resolve, reject) => {
+    const prismaBin = process.platform === "win32"
+      ? "npx.cmd"
+      : "npx";
 
-  try {
-    await prisma.$connect();
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("Conexión Prisma verificada correctamente");
-  } finally {
-    await prisma.$disconnect();
-  }
+    execFile(
+      prismaBin,
+      ["prisma", "migrate", "deploy"],
+      {
+        cwd: path.join(__dirname, ".."),
+        env: process.env,
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(stderr);
+          return reject(error);
+        }
+
+        console.log(stdout);
+        console.log("Migraciones Prisma aplicadas correctamente");
+        resolve();
+      }
+    );
+  });
 }
 
-module.exports = verifyPrismaConnection;
+module.exports = runPrismaMigrations;

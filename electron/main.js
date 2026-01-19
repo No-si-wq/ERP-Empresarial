@@ -168,7 +168,17 @@ async function startBackend() {
     }
 
     notifyRenderer("loader-status", "Preparando base de datos…");
-    await backend.ensureDatabaseExists();
+    const newDbUrl = await backend.ensureDatabaseExists();
+
+    if (newDbUrl) {
+      process.env.DATABASE_URL = newDbUrl;
+
+      backend.cryptoEnv.persistEnvVariable(
+        encEnvPath,
+        "DATABASE_URL",
+        newDbUrl
+      );
+    }
 
     if (!process.env.DATABASE_URL) {
       throw new Error("DATABASE_URL no fue establecido después de ensureDatabaseExists");
