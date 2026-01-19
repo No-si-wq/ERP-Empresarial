@@ -168,7 +168,6 @@ async function startBackend() {
 
   const envBasePath = path.join(PATHS.env, ".env.production");
   const encEnvPath = `${envBasePath}.enc`;
-  const { applyEnv } = backend.env;
 
   const { decryptFileToEnv } = backend.cryptoEnv;
 
@@ -176,7 +175,6 @@ async function startBackend() {
     backend.installEnv(envBasePath);
 
     decryptFileToEnv(encEnvPath);
-    applyEnv(process.env);
 
     if (!process.env.JWT_SECRET_CURRENT) {
       throw new Error("JWT_SECRET_CURRENT no definido en producción");
