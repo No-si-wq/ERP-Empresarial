@@ -193,10 +193,6 @@ async function startBackend() {
       );
     }
 
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL no fue establecido después de ensureDatabaseExists");
-    }
-
     notifyRenderer("loader-status", "Aplicando migraciones…");
     await backend.runPrismaMigrations();
 
