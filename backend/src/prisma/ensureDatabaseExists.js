@@ -5,6 +5,10 @@ function escapeIdentifier(value) {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
+function escapeLiteral(value) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
 function isValidDatabaseUrl(url) {
   return (
     typeof url === "string" &&
@@ -14,10 +18,11 @@ function isValidDatabaseUrl(url) {
 }
 
 async function ensureDatabaseExists() {
-  const dbUrl = process.env.DATABASE_URL
+  const dbUrl = process.env.DATABASE_URL;
 
   if (isValidDatabaseUrl(dbUrl)) {
-    console.log("DATABASE_URL valida detectada. No se genera base de datos.");
+    console.log("DATABASE_URL válida detectada. No se genera base de datos.");
+    return;
   }
 
   const { DB_HOST, DB_PORT, DB_ADMIN_USER, DB_ADMIN_PASSWORD } = process.env;
@@ -46,8 +51,7 @@ async function ensureDatabaseExists() {
 
   try {
     await adminClient.query(
-      `CREATE USER ${userIdent} WITH PASSWORD $1`,
-      [newPassword]
+      `CREATE USER ${userIdent} WITH PASSWORD ${escapeLiteral(newPassword)}`
     );
 
     await adminClient.query(

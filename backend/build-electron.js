@@ -1,4 +1,6 @@
-require("esbuild").build({
+const esbuild = require("esbuild");
+
+esbuild.build({
   entryPoints: ["src/entry-electron.js"],
   outfile: "dist/backend.cjs",
   bundle: true,
@@ -6,12 +8,12 @@ require("esbuild").build({
   format: "cjs",
   target: "node18",
   external: [
-  "@prisma/client",
-  "prisma",
-  "pg",
-  "pdfmake",
-  "@foliojs-fork/*",
-  "exceljs",
-  "multer"
+    "@prisma/client",
+    "prisma",
+    "pg",
+    "pdfmake",
+    "@foliojs-fork/*",
+    "exceljs",
+    "multer"
   ],
 }).catch(() => process.exit(1));

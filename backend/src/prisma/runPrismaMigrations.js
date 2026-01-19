@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 
-async function runPrismaMigrations() {
+async function verifyPrismaConnection() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL no definido");
   }
@@ -11,13 +11,11 @@ async function runPrismaMigrations() {
 
   try {
     await prisma.$connect();
-
     await prisma.$queryRaw`SELECT 1`;
-
-    console.log("Migraciones Prisma verificadas correctamente");
+    console.log("Conexión Prisma verificada correctamente");
   } finally {
     await prisma.$disconnect();
   }
 }
 
-module.exports = runPrismaMigrations;
+module.exports = verifyPrismaConnection;
