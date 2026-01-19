@@ -46,29 +46,26 @@ async function ensureDatabaseExists() {
 
   await adminClient.connect();
 
-  const userIdent = escapeIdentifier(newUser);
-  const dbIdent = escapeIdentifier(newDatabase);
-
   try {
     await adminClient.query(
-      `CREATE USER ${userIdent} WITH PASSWORD ${escapeLiteral(newPassword)}`
+      `CREATE USER ${escapeIdentifier(newUser)} WITH PASSWORD ${escapeLiteral(newPassword)}`
     );
 
     await adminClient.query(
-      `CREATE DATABASE ${dbIdent} OWNER ${userIdent}`
+      `CREATE DATABASE ${escapeIdentifier(newDatabase)} OWNER ${escapeIdentifier(newUser)}`
     );
-
-    const databaseUrl =
-      `postgresql://${newUser}:${newPassword}@${DB_HOST}:${DB_PORT}/${newDatabase}`;
-
-    process.env.DATABASE_URL = databaseUrl;
-
-    console.log("Base de datos creada. DATABASE_URL generada.");
-
-    return databaseUrl;
   } finally {
     await adminClient.end();
   }
+
+  const databaseUrl =
+    `postgresql://${newUser}:${newPassword}@${DB_HOST}:${DB_PORT}/${newDatabase}`;
+
+  process.env.DATABASE_URL = databaseUrl;
+
+  console.log("Base de datos creada y DATABASE_URL configurada.");
+
+  return databaseUrl;
 }
 
 module.exports = ensureDatabaseExists;
