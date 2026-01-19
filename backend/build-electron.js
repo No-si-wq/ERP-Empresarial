@@ -8,6 +8,11 @@ require("esbuild").build({
   external: [
     "@prisma/client",
     "prisma",
-    "pg"
+    "pg",
+    "pdfmake",
+    "pdfkit",
+    "@foliojs-fork/fontkit",
+    "exceljs",
+    "multer"
   ],
 }).catch(() => process.exit(1));

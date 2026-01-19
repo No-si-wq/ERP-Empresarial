@@ -49,6 +49,31 @@ exports.default = async function (context) {
   );
 
   await fs.copy(
+    path.join(__dirname, "../backend/node_modules/pdfmake"),
+    path.join(backendDest, "node_modules/pdfmake")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/pdfkit"),
+    path.join(backendDest, "node_modules/pdfkit")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/@foliojs-fork/fontkit"),
+    path.join(backendDest, "node_modules/@foliojs-fork/fontkit")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/exceljs"),
+    path.join(backendDest, "node_modules/exceljs")
+  );
+
+  await fs.copy(
+    path.join(__dirname, "../backend/node_modules/multer"),
+    path.join(backendDest, "node_modules/multer")
+  );
+
+  await fs.copy(
     path.join(__dirname, "../frontend/dist"),
     path.join(frontendDest, "dist")
   );
