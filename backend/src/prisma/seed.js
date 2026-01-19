@@ -57,7 +57,6 @@ async function seed() {
         "/categorias",
         "/monedas",
         "/impuestos",
-        "/cajas",
         "/inventarioConsulta",
         "/reportes",
         "/utilidad",
