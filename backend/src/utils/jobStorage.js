@@ -4,11 +4,18 @@ const path = require("path");
 const dataDir = path.join(__dirname, "../data");
 const filePath = path.join(dataDir, "scheduled_jobs.json");
 
+function ensureDataDir() {
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
+}
+
 function loadJobsFromDisk() {
     try {
+        ensureDataDir();
 
         if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, "[]");
+            fs.writeFileSync(filePath, "[]", "utf8");
             return [];
         }
 
@@ -18,7 +25,7 @@ function loadJobsFromDisk() {
             return JSON.parse(raw);
         } catch {
             console.error("[JobStorage] Archivo JSON corrupto. Reiniciando...");
-            fs.writeFileSync(filePath, "[]");
+            fs.writeFileSync(filePath, "[]", "utf8");
             return [];
         }
 
@@ -30,7 +37,8 @@ function loadJobsFromDisk() {
 
 function saveJobsToDisk(jobs) {
     try {
-        fs.writeFileSync(filePath, JSON.stringify(jobs, null, 2));
+        ensureDataDir();
+        fs.writeFileSync(filePath, JSON.stringify(jobs, null, 2), "utf8");
     } catch (err) {
         console.error("[JobStorage] Error guardando jobs persistidos:", err);
     }

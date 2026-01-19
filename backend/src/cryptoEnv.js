@@ -6,11 +6,14 @@ const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
 function getKey() {
-  return crypto.scryptSync(
-    `${process.env.USERNAME}-${process.env.COMPUTERNAME}-O2_SYSTEM`,
-    "o2_salt",
-    32
-  );
+  const base = [
+    process.env.USERNAME,
+    process.env.COMPUTERNAME,
+    "O2_SYSTEM",
+    process.env.APP_ID || "default"
+  ].join("|");
+
+  return crypto.scryptSync(base, "o2_salt", 32);
 }
 
 function encryptFile(filePath) {
@@ -35,29 +38,65 @@ function encryptFile(filePath) {
 }
 
 function decryptFileToEnv(encPath) {
-  const buffer = fs.readFileSync(encPath);
+  try {
+    const buffer = fs.readFileSync(encPath);
 
-  const iv = buffer.subarray(0, IV_LENGTH);
-  const tag = buffer.subarray(IV_LENGTH, IV_LENGTH + TAG_LENGTH);
-  const encrypted = buffer.subarray(IV_LENGTH + TAG_LENGTH);
+    const iv = buffer.subarray(0, IV_LENGTH);
+    const tag = buffer.subarray(IV_LENGTH, IV_LENGTH + TAG_LENGTH);
+    const encrypted = buffer.subarray(IV_LENGTH + TAG_LENGTH);
 
-  const key = getKey();
-  const decipher = crypto.createDecipheriv(ALGO, key, iv);
-  decipher.setAuthTag(tag);
+    const key = getKey();
+    const decipher = crypto.createDecipheriv(ALGO, key, iv);
+    decipher.setAuthTag(tag);
 
-  const decrypted = Buffer.concat([
-    decipher.update(encrypted),
-    decipher.final(),
-  ]).toString("utf8");
+    const decrypted = Buffer.concat([
+      decipher.update(encrypted),
+      decipher.final(),
+    ]).toString("utf8");
 
-  decrypted.split("\n").forEach(line => {
-    if (!line || line.startsWith("#")) return;
-    const [k, ...v] = line.split("=");
-    process.env[k.trim()] = v.join("=").trim();
-  });
+    decrypted
+      .split(/\r?\n/)
+      .forEach(line => {
+        if (!line || line.trim().startsWith("#")) return;
+        const idx = line.indexOf("=");
+        if (idx === -1) return;
+
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim();
+
+        process.env[key] = value;
+      });
+
+  } catch (err) {
+    throw new Error(
+      "No se pudo descifrar .env.production.enc. " +
+      "¿El archivo pertenece a otra máquina o usuario?"
+    );
+  }
 }
 
-module.exports = {
+function persistEnvVariable(encPath, key, value) {
+  let env = {};
+
+  if (fs.existsSync(encPath)) {
+    decryptFileToEnv(encPath);
+    env = { ...process.env };
+  }
+
+  env[key] = value;
+
+  const content = Object.entries(env)
+    .map(([k, v]) => `${k}=${v}`)
+    .join("\n");
+
+  const tempPath = encPath.replace(/\.enc$/, "");
+
+  fs.writeFileSync(tempPath, content, "utf8");
+  encryptFile(tempPath);
+}
+
+module.exports = cryptoEnv = {
   encryptFile,
   decryptFileToEnv,
+  persistEnvVariable,
 };
