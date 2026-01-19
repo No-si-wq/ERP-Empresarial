@@ -10,20 +10,14 @@ const cryptoEnv = require("./cryptoEnv");
 function startBackend(port = 0) {
   const server = http.createServer(app);
 
-  server.listen(port);
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
 
-  server.on("listening", () => {
-    const actualPort = server.address().port;
-    console.log(
-      JSON.stringify({
-        type: "BACKEND_READY",
-        port: actualPort,
-      })
-    );
+    server.listen(port, () => {
+      resolve(server);
+    });
   });
-
-  return server;
-};
+}
 
 module.exports = {
   startBackend,
