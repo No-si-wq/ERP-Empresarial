@@ -7,6 +7,7 @@ require("esbuild").build({
   target: "node18",
   external: [
     "@prisma/client",
-    "prisma"
+    "prisma",
+    "pg"
   ],
 }).catch(() => process.exit(1));

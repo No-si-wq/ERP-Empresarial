@@ -44,6 +44,11 @@ exports.default = async function (context) {
   );
 
   await fs.copy(
+    path.join(__dirname, "../backend/node_modules/pg"),
+    path.join(backendDest, "node_modules/pg")
+  );
+
+  await fs.copy(
     path.join(__dirname, "../frontend/dist"),
     path.join(frontendDest, "dist")
   );
