@@ -10,7 +10,7 @@ require("esbuild").build({
     "prisma",
     "pg",
     "pdfmake",
-    "pdfkit",
+    "@foliojs-fork/pdfkit",
     "@foliojs-fork/fontkit",
     "exceljs",
     "multer"

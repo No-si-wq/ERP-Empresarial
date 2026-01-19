@@ -54,8 +54,8 @@ exports.default = async function (context) {
   );
 
   await fs.copy(
-    path.join(__dirname, "../backend/node_modules/pdfkit"),
-    path.join(backendDest, "node_modules/pdfkit")
+    path.join(__dirname, "../backend/node_modules/@foliojs-fork/pdfkit"),
+    path.join(backendDest, "node_modules/@foliojs-fork/pdfkit")
   );
 
   await fs.copy(
