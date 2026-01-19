@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const clients = await prisma.client.findMany({ orderBy: { id: 'asc' } });
     res.json(clients);
@@ -17,6 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { name, rtn, email, phone, address, creditLimit, creditBalance, creditDays } = req.body;
   try {
     const client = await prisma.client.create({
@@ -38,6 +38,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const { id } = req.params;
   const { name, rtn, email, phone, address, creditLimit } = req.body;
   try {
@@ -62,18 +63,21 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.client.delete({
-      where: { id: parseInt(id) }
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const prisma = getPrisma();
+    const { id } = req.params;
+    try {
+      await prisma.client.delete({
+        where: { id: parseInt(id) }
+      });
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-});
+);
 
 router.patch('/:id/renew-credit', async (req, res) => {
+  const prisma = getPrisma();
   const { id } = req.params;
   const { extraDays } = req.body;
 
@@ -105,6 +109,7 @@ router.patch('/:id/renew-credit', async (req, res) => {
 
 
 router.patch('/:id/reset-credit-days', async (req, res) => {
+  const prisma = getPrisma();
   const { id } = req.params;
   const { newCreditDays } = req.body;
 

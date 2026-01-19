@@ -3,8 +3,6 @@ const PdfPrinter = require('pdfmake');
 const ExcelJS = require('exceljs');
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const fonts = {
   Roboto: {
     normal: 'fonts/Roboto-Regular.ttf',
@@ -57,6 +55,7 @@ async function sendExcel(res, title, headers, rows, filename) {
 }
 
 router.get('/ventas/export', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to, format = 'pdf' } = req.query;
   if (!from || !to) return res.status(400).json({ message: 'Faltan parámetros from/to' });
 
@@ -85,6 +84,7 @@ router.get('/ventas/export', async (req, res) => {
 });
 
 router.get('/compras/export', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to, format = 'pdf' } = req.query;
   if (!from || !to) return res.status(400).json({ message: 'Faltan parámetros from/to' });
 
@@ -113,6 +113,7 @@ router.get('/compras/export', async (req, res) => {
 });
 
 router.get('/kardex-por-producto/export', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to, storeId, productId, format = 'excel' } = req.query;
 
   if (!from || !to || !storeId || !productId) {
@@ -225,6 +226,7 @@ router.get('/kardex-por-producto/export', async (req, res) => {
 });
 
 router.get('/venta-utilidad-por-producto/export', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to, storeId, productStart, productEnd, format = 'pdf' } = req.query;
 
   if (!from || !to || !storeId) 
@@ -322,6 +324,7 @@ router.get('/venta-utilidad-por-producto/export', async (req, res) => {
 });
 
 router.get('/ventas', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to } = req.query;
   if (!from || !to) {
     return res.status(400).json({ message: 'Debe especificar los parámetros from y to (YYYY-MM-DD)' });
@@ -353,6 +356,7 @@ router.get('/ventas', async (req, res) => {
 });
 
 router.get('/compras', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to } = req.query;
   if (!from || !to) {
     return res.status(400).json({ message: 'Debe especificar los parámetros from y to (YYYY-MM-DD)' });
@@ -384,6 +388,7 @@ router.get('/compras', async (req, res) => {
 });
 
 router.get('/venta-utilidad-por-producto', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to, storeId, productStart, productEnd, productIds } = req.query;
 
   if (!from || !to || !storeId) {
@@ -500,6 +505,7 @@ router.get('/venta-utilidad-por-producto', async (req, res) => {
 });
 
 router.get("/kardex-producto", async (req, res) => {
+  const prisma = getPrisma();
   try {
     const { from, to, storeId, productId } = req.query;
 
@@ -691,6 +697,7 @@ router.get("/kardex-producto", async (req, res) => {
 });
 
 router.get('/datos', async (req, res) => {
+  const prisma = getPrisma();
   const { from, to } = req.query;
   if (!from || !to) {
     return res.status(400).json({ message: 'Debe especificar los parámetros from y to (YYYY-MM-DD)' });

@@ -2,9 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 router.get("/tienda/:id", async (req, res) => {
+  const prisma = getPrisma();
   const storeId = parseInt(req.params.id, 10);
   if (isNaN(storeId)) {
     return res.status(400).json({ error: "ID de tienda inválido" });

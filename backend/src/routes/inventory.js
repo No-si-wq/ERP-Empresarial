@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
@@ -13,6 +11,7 @@ const validateNumericId = (id) => {
 };
 
 router.get('/by-store/:storeId', authenticateToken, async (req, res) => {
+  const prisma = getPrisma();
   const storeId = validateNumericId(req.params.storeId);
   if (!storeId) {
     return res.status(400).json({ error: 'storeId inválido' });
@@ -51,6 +50,7 @@ router.get('/by-store/:storeId', authenticateToken, async (req, res) => {
 });
 
 router.post('/tienda/:storeId', authenticateToken, async (req, res) => {
+  const prisma = getPrisma();
   const storeId = validateNumericId(req.params.storeId);
   if (!storeId) {
     return res.status(400).json({ error: 'storeId inválido' });
@@ -115,6 +115,7 @@ router.post('/tienda/:storeId', authenticateToken, async (req, res) => {
 });
 
 router.put('/:id', authenticateToken, async (req, res) => {
+  const prisma = getPrisma();
   const id = validateNumericId(req.params.id);
   if (!id) {
     return res.status(400).json({ error: 'ID inválido' });
@@ -182,6 +183,7 @@ router.delete(
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
+    const prisma = getPrisma();
     const id = validateNumericId(req.params.id);
     if (!id) {
       return res.status(400).json({ error: 'ID inválido' });

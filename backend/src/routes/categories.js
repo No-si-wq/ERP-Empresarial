@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const categories = await prisma.category.findMany();
     res.json(categories);
@@ -17,6 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { name } = req.body;
   try {
     const category = await prisma.category.create({ data: { name } });
@@ -27,6 +27,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const { id } = req.params;
   const { name } = req.body;
   try {
@@ -44,13 +45,15 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.category.delete({ where: { id: parseInt(id) } });
-    res.json({ message: 'Categoría eliminada' });
-  } catch (error) {
-    res.status(400).json({ error: 'Error al eliminar la categoría' });
+    const prisma = getPrisma();
+    const { id } = req.params;
+    try {
+      await prisma.category.delete({ where: { id: parseInt(id) } });
+      res.json({ message: 'Categoría eliminada' });
+    } catch (error) {
+      res.status(400).json({ error: 'Error al eliminar la categoría' });
+    }
   }
-});
+);
 
 module.exports = router;

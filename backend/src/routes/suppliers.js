@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const suppliers = await prisma.supplier.findMany({ orderBy: { id: 'asc' } });
     res.json(suppliers);
@@ -17,6 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { name, rtn, email, phone, address } = req.body;
   try {
     const supplier = await prisma.supplier.create({
@@ -29,6 +29,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const { id } = req.params;
   const { name, rtn, email, phone, address } = req.body;
   try {
@@ -46,15 +47,17 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.supplier.delete({
-      where: { id: parseInt(id) }
-    });
-    res.json({ message: 'Proveedor eliminado correctamente' });
-  } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar proveedor' });
+    const prisma = getPrisma();
+    const { id } = req.params;
+    try {
+      await prisma.supplier.delete({
+        where: { id: parseInt(id) }
+      });
+      res.json({ message: 'Proveedor eliminado correctamente' });
+    } catch (err) {
+      res.status(500).json({ error: 'Error al eliminar proveedor' });
+    }
   }
-});
+);
 
 module.exports = router;

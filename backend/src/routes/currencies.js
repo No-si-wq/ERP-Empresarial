@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   const { page = 1, limit = 10 } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -28,6 +27,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { clave, descripcion, abreviatura, tipoCambio } = req.body;
   if (!clave || !descripcion || !abreviatura || typeof tipoCambio !== 'number') {
     return res.status(400).send('Faltan campos obligatorios');
@@ -45,6 +45,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const { clave, descripcion, abreviatura, tipoCambio } = req.body;
   if (!clave || !descripcion || !abreviatura || typeof tipoCambio !== 'number') {
     return res.status(400).send('Faltan campos obligatorios');
@@ -66,16 +67,19 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  try {
-    await prisma.currency.delete({ where: { id: parseInt(req.params.id) } });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error al eliminar moneda');
+    const prisma = getPrisma();
+    try {
+      await prisma.currency.delete({ where: { id: parseInt(req.params.id) } });
+      res.sendStatus(200);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error al eliminar moneda');
+    }
   }
-});
+);
 
 router.get('/next-clave', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const existing = await prisma.currency.findMany({
       select: { clave: true },
@@ -102,6 +106,7 @@ router.get('/next-clave', async (req, res) => {
 });
 
 router.get('/check-clave/:clave', async (req, res) => {
+  const prisma = getPrisma();
   const { clave } = req.params;
 
   try {

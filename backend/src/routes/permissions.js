@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const perms = await prisma.permission.findMany({ orderBy: { id: 'asc' } });
     const cleanPerms = perms.map(p => ({ id: p.id, key: p.key, description: p.description }));
@@ -19,6 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { key, description } = req.body;
   if (!key) return res.status(400).json({ error: 'Key requerida' });
 
@@ -36,18 +36,21 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'), 
   async (req, res) => {
-  const id = Number(req.params.id);
-  try {
-    await prisma.permission.delete({ where: { id } });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    if (err.code === 'P2025') return res.status(404).json({ error: 'Permiso no encontrado' });
-    res.status(500).json({ error: 'Error al eliminar permiso' });
+    const prisma = getPrisma();
+    const id = Number(req.params.id);
+    try {
+      await prisma.permission.delete({ where: { id } });
+      res.sendStatus(200);
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'P2025') return res.status(404).json({ error: 'Permiso no encontrado' });
+      res.status(500).json({ error: 'Error al eliminar permiso' });
+    }
   }
-});
+);
 
 router.get('/role/:roleId', async (req, res) => {
+  const prisma = getPrisma();
   const roleId = Number(req.params.roleId);
 
   try {
@@ -72,6 +75,7 @@ router.get('/role/:roleId', async (req, res) => {
 });
 
 router.put('/role/:roleId', async (req, res) => {
+  const prisma = getPrisma();
   const roleId = Number(req.params.roleId);
   const { permissionIds } = req.body;
 

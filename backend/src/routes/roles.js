@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const roles = await prisma.role.findMany({
       include: {
@@ -37,6 +36,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const roleId = Number(req.params.id);
   if (isNaN(roleId)) return res.status(400).json({ error: 'ID de rol inválido' });
 
@@ -67,6 +67,7 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'Nombre requerido' });
 
@@ -81,6 +82,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const roleId = Number(req.params.id);
   const { name, description } = req.body;
 
@@ -101,18 +103,21 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  const roleId = Number(req.params.id);
-  try {
-    await prisma.role.delete({ where: { id: roleId } });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    if (err.code === 'P2025') return res.status(404).json({ error: 'Rol no encontrado' });
-    res.status(500).json({ error: 'Error al eliminar rol' });
+    const prisma = getPrisma();
+    const roleId = Number(req.params.id);
+    try {
+      await prisma.role.delete({ where: { id: roleId } });
+      res.sendStatus(200);
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'P2025') return res.status(404).json({ error: 'Rol no encontrado' });
+      res.status(500).json({ error: 'Error al eliminar rol' });
+    }
   }
-});
+);
 
 router.put('/:id/permisos', async (req, res) => {
+  const prisma = getPrisma();
   const roleId = Number(req.params.id);
   const { permissionIds } = req.body;
 

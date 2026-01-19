@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 async function generarFolioPorCaja(tx, cajaId, tipo) {
   const registro = await tx.folioCounter.findUnique({
     where: { caja_id_tipo: { caja_id: cajaId, tipo } }
@@ -27,6 +25,7 @@ async function generarFolioPorCaja(tx, cajaId, tipo) {
 }
 
 async function buildInvoiceItems(productos) {
+  const prisma = getPrisma();
   let total = 0;
   const itemsData = [];
 
@@ -50,6 +49,7 @@ async function buildInvoiceItems(productos) {
 }
 
 router.get('/admin', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const invoices = await prisma.invoice.findMany({
       include: { client: true, caja: true, },
@@ -74,6 +74,7 @@ router.get('/admin', async (req, res) => {
 });
 
 router.get('/next-folio-estimado/:cajaId', async (req, res) => {
+  const prisma = getPrisma();
   const { cajaId } = req.params;
   if (!cajaId) return res.status(400).json({ error: 'Falta el id de la caja' });
 
@@ -98,6 +99,7 @@ router.get('/next-folio-estimado/:cajaId', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const { clienteId, productos, storeId, cajaId, importeRecibido, cambio, formasPago } = req.body;
     if (!productos?.length) return res.status(400).json({ error: 'Debe incluir al menos un producto' });
@@ -155,6 +157,7 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/pendiente', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const { clienteId, productos, storeId, cajaId, formasPago } = req.body;
     if (!productos?.length) return res.status(400).json({ error: 'Debe incluir al menos un producto' });
@@ -186,6 +189,7 @@ router.post('/pendiente', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
@@ -238,6 +242,7 @@ router.get('/:id', async (req, res) => {
 
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const id = parseInt(req.params.id, 10);
     const { clienteId, productos, storeId, cajaId, importeRecibido, cambio, formasPago } = req.body;
@@ -334,6 +339,7 @@ router.put('/:id', async (req, res) => {
 });
 
 router.patch('/:id/cancel', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const id = parseInt(req.params.id, 10);
     const invoice = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });

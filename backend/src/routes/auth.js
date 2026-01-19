@@ -3,14 +3,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { getJwtSecrets } = require("../security/jwtSecrets");
 const { verifyJwtToken } = require("../security/verifyJwt");
 
 const router = express.Router();
 
 router.get("/validate", (req, res) => {
+  const prisma = getPrisma();
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ valid: false });
@@ -35,6 +34,7 @@ router.get("/validate", (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+  const prisma = getPrisma();
   const { username, password } = req.body;
 
   try {

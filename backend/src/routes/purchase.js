@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 async function generarFolioPorCaja(tx, cajaId, tipo, incrementar = true) {
   const result = await tx.folioCounter.findUnique({
     where: { caja_id_tipo: { caja_id: cajaId, tipo } },
@@ -32,6 +30,7 @@ async function generarFolioPorCaja(tx, cajaId, tipo, incrementar = true) {
 }
 
 router.get('/admin', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const purchases = await prisma.purchase.findMany({
       include: { supplier: true, caja: true },
@@ -56,6 +55,7 @@ router.get('/admin', async (req, res) => {
 });
 
 router.get('/last-folio/:cajaId', async (req, res) => {
+  const prisma = getPrisma();
   const { cajaId } = req.params;
 
   if (!cajaId) return res.status(400).json({ error: "CajaId es obligatorio" });
@@ -77,6 +77,7 @@ router.get('/last-folio/:cajaId', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const compraId = parseInt(req.params.id, 10);
   if (isNaN(compraId)) return res.status(400).json({ error: "ID inválido" });
 
@@ -128,6 +129,7 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { supplierId, storeId, cajaId, productos, formasPago } = req.body;
   if (!supplierId || !storeId || !cajaId || !Array.isArray(productos) || productos.length === 0) {
     return res.status(400).json({ error: "Faltan datos obligatorios o productos" });
@@ -199,6 +201,7 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/pendiente', async (req, res) => {
+  const prisma = getPrisma();
   const { supplierId, storeId, cajaId, productos, formasPago } = req.body;
   if (!supplierId || !storeId || !cajaId || !Array.isArray(productos) || productos.length === 0) {
     return res.status(400).json({ error: "Faltan datos obligatorios o productos" });
@@ -250,6 +253,7 @@ router.post('/pendiente', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const compraId = parseInt(req.params.id);
   const { supplierId, storeId, cajaId, productos, formasPago } = req.body;
 
@@ -301,6 +305,7 @@ router.put('/:id', async (req, res) => {
 });
 
 router.patch('/:id/cancel', async (req, res) => {
+  const prisma = getPrisma();
   const compraId = parseInt(req.params.id);
   if (isNaN(compraId)) return res.status(400).json({ error: "ID inválido" });
 

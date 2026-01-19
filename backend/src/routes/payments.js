@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { clientId, paymentMethodId, amount, type } = req.body;
 
   if (!clientId || !paymentMethodId || !amount || !type) {
@@ -41,6 +40,7 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/:clientId', async (req, res) => {
+  const prisma = getPrisma();
   const { clientId } = req.params;
 
   try {

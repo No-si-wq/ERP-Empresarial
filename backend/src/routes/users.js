@@ -3,12 +3,11 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 const { getPrisma } = require("../prisma");
 
-const prisma = getPrisma();
-
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
+  const prisma = getPrisma();
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -48,6 +47,7 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const prisma = getPrisma();
   const { email, username, password, roleId } = req.body;
 
   if (!email || !username || !password || !roleId) {
@@ -102,6 +102,7 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  const prisma = getPrisma();
   const { email, username, password, roleId } = req.body;
   const userId = Number(req.params.id);
 
@@ -163,15 +164,17 @@ router.delete('/:id',
   authenticateToken,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
-  try {
-    await prisma.user.delete({
-      where: { id: Number(req.params.id) }
-    });
-    res.sendStatus(200);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al eliminar usuario' });
+    const prisma = getPrisma();
+    try {
+      await prisma.user.delete({
+        where: { id: Number(req.params.id) }
+      });
+      res.sendStatus(200);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al eliminar usuario' });
+    }
   }
-});
+);
 
 module.exports = router;
