@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
+const { PATHS, ensureAppDirs } = require("../backend/src/utils/appPath") ;
 
 log.transports.file.level = "info";
 log.transports.file.resolvePathFn = () => {
@@ -150,8 +151,9 @@ async function startBackend() {
 
   backend = requireBackendModule();
 
-  const userDataPath = app.getPath("userData");
-  const envBasePath = path.join(userDataPath, ".env.production");
+  ensureAppDirs();
+
+  const envBasePath = path.join(PATHS, ".env.production");
   const encEnvPath = `${envBasePath}.enc`;
   const { applyEnv } = backend.env;
 
@@ -162,6 +164,10 @@ async function startBackend() {
 
     decryptFileToEnv(encEnvPath);
     applyEnv(process.env);
+
+    if (!fs.existsSync(appDataDir)) {
+      fs.mkdirSync(appDataDir, { recursive: true });
+    }
 
     if (!process.env.JWT_SECRET_CURRENT) {
       throw new Error("JWT_SECRET_CURRENT no definido en producción");

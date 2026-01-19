@@ -6,14 +6,17 @@ const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
 function getKey() {
-  const base = [
-    process.env.USERNAME,
-    process.env.COMPUTERNAME,
+  const machineId = [
+    process.env.COMPUTERNAME || "unknown_machine",
     "O2_SYSTEM",
-    process.env.APP_ID || "default"
+    process.env.APP_ID || "o2_app"
   ].join("|");
 
-  return crypto.scryptSync(base, "o2_salt", 32);
+  return crypto.scryptSync(
+    machineId,
+    "o2_machine_salt",
+    32
+  );
 }
 
 function encryptFile(filePath) {
