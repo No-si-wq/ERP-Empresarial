@@ -18,8 +18,11 @@ function isValidDatabaseUrl(url) {
 }
 
 async function ensureDatabaseExists() {
-  if (isValidDatabaseUrl(process.env.DATABASE_URL)) {
-    return null;
+  const existingUrl = process.env.DATABASE_URL;
+
+  if (isValidDatabaseUrl(existingUrl)) {
+    console.log("DATABASE_URL válida detectada. Usando base de datos existente.");
+    return existingUrl;
   }
 
   const { DB_HOST, DB_PORT, DB_ADMIN_USER, DB_ADMIN_PASSWORD } = process.env;
@@ -57,6 +60,8 @@ async function ensureDatabaseExists() {
 
     const databaseUrl =
       `postgresql://${newUser}:${newPassword}@${DB_HOST}:${DB_PORT}/${newDatabase}`;
+
+    process.env.DATABASE_URL = databaseUrl;
 
     console.log("Base de datos creada. DATABASE_URL generada.");
 
