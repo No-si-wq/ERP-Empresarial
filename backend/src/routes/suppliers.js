@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
   try {
-    const suppliers = await req.prisma.supplier.findMany({ orderBy: { id: 'asc' } });
+    const suppliers = await prisma.supplier.findMany({ orderBy: { id: 'asc' } });
     res.json(suppliers);
   } catch {
     res.status(500).json({ error: 'Error al obtener proveedores' });
@@ -16,7 +19,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const { name, rtn, email, phone, address } = req.body;
   try {
-    const supplier = await req.prisma.supplier.create({
+    const supplier = await prisma.supplier.create({
       data: { name, rtn, email, phone, address }
     });
     res.status(201).json(supplier);
@@ -29,7 +32,7 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { name, rtn, email, phone, address } = req.body;
   try {
-    const updatedSupplier = await req.prisma.supplier.update({
+    const updatedSupplier = await prisma.supplier.update({
       where: { id: parseInt(id) },
       data: { name, rtn, email, phone, address }
     });
@@ -45,7 +48,7 @@ router.delete('/:id',
   async (req, res) => {
   const { id } = req.params;
   try {
-    await req.prisma.supplier.delete({
+    await prisma.supplier.delete({
       where: { id: parseInt(id) }
     });
     res.json({ message: 'Proveedor eliminado correctamente' });

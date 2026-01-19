@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 router.post('/', async (req, res) => {
   const { clientId, paymentMethodId, amount, type } = req.body;
@@ -9,7 +12,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const payment = await req.prisma.clientPayment.create({
+    const payment = await prisma.clientPayment.create({
       data: {
         clientId,
         paymentMethodId,
@@ -18,12 +21,12 @@ router.post('/', async (req, res) => {
     });
 
     if (type === 'USE') {
-      await req.prisma.client.update({
+      await prisma.client.update({
         where: { id: clientId },
         data: { creditBalance: { increment: amount } }
       });
     } else if (type === 'PAY') {
-      await req.prisma.client.update({
+      await prisma.client.update({
         where: { id: clientId },
         data: { creditBalance: { decrement: amount } }
       });
@@ -41,7 +44,7 @@ router.get('/:clientId', async (req, res) => {
   const { clientId } = req.params;
 
   try {
-    const client = await req.prisma.client.findUnique({
+    const client = await prisma.client.findUnique({
       where: { id: parseInt(clientId) },
       include: {
         payments: {

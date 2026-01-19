@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 router.get("/tienda/:id", async (req, res) => {
   const storeId = parseInt(req.params.id, 10);
@@ -8,7 +11,7 @@ router.get("/tienda/:id", async (req, res) => {
   }
 
   try {
-    const productos = await req.prisma.product.findMany({
+    const productos = await prisma.product.findMany({
       where: { storeId },
       include: {
         category: true,

@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
   try {
-    const roles = await req.prisma.role.findMany({
+    const roles = await prisma.role.findMany({
       include: {
         permissions: {
           include: { permission: true }
@@ -38,7 +41,7 @@ router.get('/:id', async (req, res) => {
   if (isNaN(roleId)) return res.status(400).json({ error: 'ID de rol inválido' });
 
   try {
-    const role = await req.prisma.role.findUnique({
+    const role = await prisma.role.findUnique({
       where: { id: roleId },
       include: {
         permissions: { include: { permission: true } }
@@ -68,7 +71,7 @@ router.post('/', async (req, res) => {
   if (!name) return res.status(400).json({ error: 'Nombre requerido' });
 
   try {
-    const role = await req.prisma.role.create({ data: { name, description } });
+    const role = await prisma.role.create({ data: { name, description } });
     res.status(201).json({ id: role.id, name: role.name, description: role.description });
   } catch (err) {
     console.error(err);
@@ -82,7 +85,7 @@ router.put('/:id', async (req, res) => {
   const { name, description } = req.body;
 
   try {
-    const updated = await req.prisma.role.update({
+    const updated = await prisma.role.update({
       where: { id: roleId },
       data: { ...(name && { name }), ...(description && { description }) }
     });
@@ -100,7 +103,7 @@ router.delete('/:id',
   async (req, res) => {
   const roleId = Number(req.params.id);
   try {
-    await req.prisma.role.delete({ where: { id: roleId } });
+    await prisma.role.delete({ where: { id: roleId } });
     res.sendStatus(200);
   } catch (err) {
     console.error(err);
@@ -116,13 +119,13 @@ router.put('/:id/permisos', async (req, res) => {
   if (!Array.isArray(permissionIds)) return res.status(400).json({ error: 'permissionIds debe ser un array' });
 
   try {
-    const roleExists = await req.prisma.role.findUnique({ where: { id: roleId } });
+    const roleExists = await prisma.role.findUnique({ where: { id: roleId } });
     if (!roleExists) return res.status(404).json({ error: 'Rol no encontrado' });
 
-    await req.prisma.permissionOnRole.deleteMany({ where: { roleId } });
+    await prisma.permissionOnRole.deleteMany({ where: { roleId } });
 
     for (const pid of permissionIds) {
-      await req.prisma.permissionOnRole.create({
+      await prisma.permissionOnRole.create({
         data: { roleId, permissionId: pid }
       });
     }

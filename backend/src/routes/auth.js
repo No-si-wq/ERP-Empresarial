@@ -1,6 +1,9 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { getJwtSecrets } = require("../security/jwtSecrets");
 const { verifyJwtToken } = require("../security/verifyJwt");
@@ -37,7 +40,7 @@ router.post("/login", async (req, res) => {
   try {
     const { current: jwtSecret } = getJwtSecrets();
 
-    const user = await req.prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: { username },
       include: {
         role: {

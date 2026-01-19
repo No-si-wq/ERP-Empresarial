@@ -1,22 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
 const { createMorganLogger } = require("./logger");
-
-const { getPrisma } = require("./prisma");
-
-const prisma = getPrisma();
 
 const app = express();
 
 app.use(createMorganLogger());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-
-app.use((req, res, next) => {
-  req.prisma = prisma;
-  next();
-});
 
 app.get("/health", (req, res) => {
   res.json({

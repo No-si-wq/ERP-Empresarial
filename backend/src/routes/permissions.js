@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
   try {
-    const perms = await req.prisma.permission.findMany({ orderBy: { id: 'asc' } });
+    const perms = await prisma.permission.findMany({ orderBy: { id: 'asc' } });
     const cleanPerms = perms.map(p => ({ id: p.id, key: p.key, description: p.description }));
     res.json(cleanPerms);
   } catch (err) {
@@ -20,7 +23,7 @@ router.post('/', async (req, res) => {
   if (!key) return res.status(400).json({ error: 'Key requerida' });
 
   try {
-    const perm = await req.prisma.permission.create({ data: { key, description } });
+    const perm = await prisma.permission.create({ data: { key, description } });
     res.status(201).json({ id: perm.id, key: perm.key, description: perm.description });
   } catch (err) {
     console.error(err);
@@ -35,7 +38,7 @@ router.delete('/:id',
   async (req, res) => {
   const id = Number(req.params.id);
   try {
-    await req.prisma.permission.delete({ where: { id } });
+    await prisma.permission.delete({ where: { id } });
     res.sendStatus(200);
   } catch (err) {
     console.error(err);
@@ -48,7 +51,7 @@ router.get('/role/:roleId', async (req, res) => {
   const roleId = Number(req.params.roleId);
 
   try {
-    const role = await req.prisma.role.findUnique({
+    const role = await prisma.role.findUnique({
       where: { id: roleId },
       include: { permissions: { include: { permission: true } } }
     });
@@ -75,13 +78,13 @@ router.put('/role/:roleId', async (req, res) => {
   if (!Array.isArray(permissionIds)) return res.status(400).json({ error: 'permissionIds debe ser un array' });
 
   try {
-    const roleExists = await req.prisma.role.findUnique({ where: { id: roleId } });
+    const roleExists = await prisma.role.findUnique({ where: { id: roleId } });
     if (!roleExists) return res.status(404).json({ error: 'Rol no encontrado' });
 
-    await req.prisma.permissionOnRole.deleteMany({ where: { roleId } });
+    await prisma.permissionOnRole.deleteMany({ where: { roleId } });
 
     for (const pid of permissionIds) {
-      await req.prisma.permissionOnRole.create({ data: { roleId, permissionId: pid } });
+      await prisma.permissionOnRole.create({ data: { roleId, permissionId: pid } });
     }
 
     res.sendStatus(200);

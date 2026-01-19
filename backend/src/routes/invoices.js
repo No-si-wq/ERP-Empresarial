@@ -51,7 +51,7 @@ async function buildInvoiceItems(productos) {
 
 router.get('/admin', async (req, res) => {
   try {
-    const invoices = await req.prisma.invoice.findMany({
+    const invoices = await prisma.invoice.findMany({
       include: { client: true, caja: true, },
       orderBy: { id: 'asc' },
     });
@@ -78,7 +78,7 @@ router.get('/next-folio-estimado/:cajaId', async (req, res) => {
   if (!cajaId) return res.status(400).json({ error: 'Falta el id de la caja' });
 
   try {
-    const folio = await req.prisma.$transaction(async (tx) => {
+    const folio = await prisma.$transaction(async (tx) => {
       const registro = await tx.folioCounter.findUnique({
         where: { caja_id_tipo: { caja_id: Number(cajaId), tipo: 'invoice' } }
       });
@@ -104,7 +104,7 @@ router.post('/', async (req, res) => {
 
     const { itemsData, total } = await buildInvoiceItems(productos);
 
-    const invoice = await req.prisma.$transaction(async tx => {
+    const invoice = await prisma.$transaction(async tx => {
       const folio = await generarFolioPorCaja(tx, cajaId, 'invoice');
 
       const credPago = formasPago?.find(f => f.metodo.startsWith('CRED'));
@@ -161,9 +161,9 @@ router.post('/pendiente', async (req, res) => {
 
     const { itemsData, total } = await buildInvoiceItems(productos);
 
-    const folio = await req.prisma.$transaction(async tx => generarFolioPorCaja(tx, cajaId, 'invoice'));
+    const folio = await prisma.$transaction(async tx => generarFolioPorCaja(tx, cajaId, 'invoice'));
 
-    const invoice = await req.prisma.invoice.create({
+    const invoice = await prisma.invoice.create({
       data: {
         folio,
         total,
@@ -190,7 +190,7 @@ router.get('/:id', async (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
-    const invoice = await req.prisma.invoice.findUnique({
+    const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
         client: true,
@@ -244,7 +244,7 @@ router.put('/:id', async (req, res) => {
 
     if (!productos?.length) return res.status(400).json({ error: 'Debe incluir al menos un producto' });
 
-    const invoice = await req.prisma.invoice.findUnique({ where: { id }, include: { items: true } });
+    const invoice = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
     if (!invoice) return res.status(404).json({ error: 'Factura no encontrada' });
 
     const wasEmitted = invoice.estado === 'EMITIDA';
@@ -252,7 +252,7 @@ router.put('/:id', async (req, res) => {
     const newQtyByProduct = new Map(productos.map(p => [p.productoId, p.cantidad]));
 
     const allProductIds = Array.from(new Set([...oldQtyByProduct.keys(), ...newQtyByProduct.keys()]));
-    const productsDB = await req.prisma.product.findMany({ where: { id: { in: allProductIds } } });
+    const productsDB = await prisma.product.findMany({ where: { id: { in: allProductIds } } });
     const prodById = new Map(productsDB.map(p => [p.id, p]));
 
     let total = 0;
@@ -274,7 +274,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const updatedInvoice = await req.prisma.$transaction(async tx => {
+    const updatedInvoice = await prisma.$transaction(async tx => {
       if (wasEmitted) {
         for (const [pid, qty] of oldQtyByProduct.entries()) {
           if (qty > 0) await tx.product.update({ where: { id: pid }, data: { quantity: { increment: qty } } });
@@ -336,11 +336,11 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id/cancel', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const invoice = await req.prisma.invoice.findUnique({ where: { id }, include: { items: true } });
+    const invoice = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
     if (!invoice) return res.status(404).json({ error: 'Factura no encontrada' });
     if (invoice.estado === 'CANCELADA') return res.status(400).json({ error: 'La factura ya está cancelada' });
 
-    await req.prisma.$transaction(async tx => {
+    await prisma.$transaction(async tx => {
       for (const item of invoice.items) {
         await tx.product.update({ where: { id: item.productId }, data: { quantity: { increment: item.quantity } } });
       }

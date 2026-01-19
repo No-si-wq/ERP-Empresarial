@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
@@ -9,7 +12,7 @@ router.get('/by-store/:storeId', async (req, res) => {
   if (isNaN(storeId)) return res.status(400).json({ error: 'storeId inválido' });
 
   try {
-    const cajas = await req.prisma.cashRegister.findMany({ where: { storeId } });
+    const cajas = await prisma.cashRegister.findMany({ where: { storeId } });
     res.json(cajas);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener cajas' });
@@ -29,7 +32,7 @@ router.post('/tienda/:storeId', async (req, res) => {
   }
 
   try {
-    const nuevaCaja = await req.prisma.cashRegister.create({
+    const nuevaCaja = await prisma.cashRegister.create({
       data: {
         numeroDeCaja,
         descripcion,
@@ -59,7 +62,7 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const updated = await req.prisma.cashRegister.update({
+    const updated = await prisma.cashRegister.update({
       where: { id },
       data: { numeroDeCaja, descripcion, formatoNota, formatoCFDI }
     });
@@ -82,7 +85,7 @@ router.delete('/:id',
   }
 
   try {
-    await req.prisma.cashRegister.delete({ where: { id } });
+    await prisma.cashRegister.delete({ where: { id } });
     res.sendStatus(204);
   } catch (err) {
     console.error('Error al eliminar caja:', err);
@@ -92,7 +95,7 @@ router.delete('/:id',
 
 router.get('/next-clave', async (req, res) => {
   try {
-    const existing = await req.prisma.cashRegister.findMany({
+    const existing = await prisma.cashRegister.findMany({
       select: { numeroDeCaja: true },
       orderBy: { numeroDeCaja: 'asc' }
     });
@@ -126,7 +129,7 @@ router.get('/check-clave/:numeroDeCaja', async (req, res) => {
   }
 
   try {
-    const exists = await req.prisma.cashRegister.findFirst({
+    const exists = await prisma.cashRegister.findFirst({
       where: { numeroDeCaja }
     });
 

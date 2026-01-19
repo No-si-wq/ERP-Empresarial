@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
@@ -16,7 +19,7 @@ router.get('/by-store/:storeId', authenticateToken, async (req, res) => {
   }
 
   try {
-    const productos = await req.prisma.product.findMany({
+    const productos = await prisma.product.findMany({
       where: { storeId },
       select: {
         id: true,
@@ -77,7 +80,7 @@ router.post('/tienda/:storeId', authenticateToken, async (req, res) => {
   }
 
   try {
-    const nuevoProducto = await req.prisma.product.create({
+    const nuevoProducto = await prisma.product.create({
       data: {
         name,
         sku,
@@ -150,7 +153,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 
   try {
-    const updated = await req.prisma.product.update({
+    const updated = await prisma.product.update({
       where: { id },
       data,
       include: {
@@ -185,7 +188,7 @@ router.delete(
     }
 
     try {
-      await req.prisma.product.delete({ where: { id } });
+      await prisma.product.delete({ where: { id } });
       res.sendStatus(200);
     } catch (error) {
       console.error('Error al eliminar producto:', error);

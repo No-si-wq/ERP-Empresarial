@@ -1,13 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
   try {
-    const users = await req.prisma.user.findMany({
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         username: true,
@@ -54,7 +57,7 @@ router.post('/', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await req.prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         username,
@@ -114,7 +117,7 @@ router.put('/:id', async (req, res) => {
       ...(roleId && { role: { connect: { id: Number(roleId) } } })
     };
 
-    const user = await req.prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: userId },
       data: dataToUpdate,
       include: {
@@ -161,7 +164,7 @@ router.delete('/:id',
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
   try {
-    await req.prisma.user.delete({
+    await prisma.user.delete({
       where: { id: Number(req.params.id) }
     });
     res.sendStatus(200);

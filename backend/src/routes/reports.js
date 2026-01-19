@@ -1,6 +1,9 @@
 const express = require('express');
 const PdfPrinter = require('pdfmake');
 const ExcelJS = require('exceljs');
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const fonts = {
   Roboto: {
@@ -58,7 +61,7 @@ router.get('/ventas/export', async (req, res) => {
   if (!from || !to) return res.status(400).json({ message: 'Faltan parámetros from/to' });
 
   try {
-    const ventas = await req.prisma.invoice.findMany({
+    const ventas = await prisma.invoice.findMany({
       where: { createdAt: { gte: new Date(from), lte: new Date(to) }, estado: "EMITIDA" },
       include: { client: true },
       orderBy: { createdAt: 'asc' }
@@ -86,7 +89,7 @@ router.get('/compras/export', async (req, res) => {
   if (!from || !to) return res.status(400).json({ message: 'Faltan parámetros from/to' });
 
   try {
-    const compras = await req.prisma.purchase.findMany({
+    const compras = await prisma.purchase.findMany({
       where: { createdAt: { gte: new Date(from), lte: new Date(to) }, estado: "EMITIDA" },
       include: { supplier: true },
       orderBy: { createdAt: 'asc' }
@@ -128,14 +131,14 @@ router.get('/kardex-por-producto/export', async (req, res) => {
     const startDate = new Date(`${from}T00:00:00Z`);
     const endDate = new Date(`${to}T23:59:59Z`);
 
-    const producto = await req.prisma.product.findUnique({
+    const producto = await prisma.product.findUnique({
       where: { id: product },
       select: { id: true, name: true }
     });
     if (!producto) return res.status(404).json({ message: "Producto no encontrado" });
 
     const obtenerMovimientos = async (modelo, estado, tipo, esCancelacion = false) => {
-      const registros = await req.prisma[modelo].findMany({
+      const registros = await prisma[modelo].findMany({
         where: {
           createdAt: { gte: startDate, lte: endDate },
           storeId: store,
@@ -233,14 +236,14 @@ router.get('/venta-utilidad-por-producto/export', async (req, res) => {
     let productIdArray = [];
 
     if (startId !== null && endId !== null) {
-      const productos = await req.prisma.product.findMany({ 
+      const productos = await prisma.product.findMany({ 
         where: { id: { gte: startId, lte: endId } }, 
         select: { id: true } 
       });
       productIdArray = productos.map(p => p.id);
     }
 
-    const ventas = await req.prisma.invoice.findMany({
+    const ventas = await prisma.invoice.findMany({
       where: {
         createdAt: { gte: new Date(from), lte: new Date(to) },
         estado: 'EMITIDA',
@@ -325,7 +328,7 @@ router.get('/ventas', async (req, res) => {
   }
 
   try {
-    const ventas = await req.prisma.invoice.findMany({
+    const ventas = await prisma.invoice.findMany({
       where: {
         createdAt: { gte: new Date(from), lte: new Date(to) },
         estado: "EMITIDA"
@@ -356,7 +359,7 @@ router.get('/compras', async (req, res) => {
   }
 
   try {
-    const compras = await req.prisma.purchase.findMany({
+    const compras = await prisma.purchase.findMany({
       where: {
         createdAt: { gte: new Date(from), lte: new Date(to) },
         estado: "EMITIDA" 
@@ -407,7 +410,7 @@ router.get('/venta-utilidad-por-producto', async (req, res) => {
       if (productEndId < productStartId) {
         return res.status(400).json({ message: "El producto final debe ser mayor o igual al inicial" });
       }
-      const productosEnRango = await req.prisma.product.findMany({
+      const productosEnRango = await prisma.product.findMany({
         where: { id: { gte: productStartId, lte: productEndId } },
         select: { id: true }
       });
@@ -420,7 +423,7 @@ router.get('/venta-utilidad-por-producto', async (req, res) => {
       return res.status(400).json({ message: 'Debe especificar productStart y productEnd o al menos un productId' });
     }
 
-    const ventas = await req.prisma.invoice.findMany({
+    const ventas = await prisma.invoice.findMany({
       where: {
         createdAt: { gte: fromDate, lte: toDate },
         estado: "EMITIDA",
@@ -511,7 +514,7 @@ router.get("/kardex-producto", async (req, res) => {
     const storeID = Number(storeId);
     const productID = Number(productId);
 
-    const producto = await req.prisma.product.findUnique({
+    const producto = await prisma.product.findUnique({
       where: { id: productID },
       select: { id: true, name: true, quantity: true },
     });
@@ -526,7 +529,7 @@ router.get("/kardex-producto", async (req, res) => {
       ventasCanceladasPrevias,
       comprasCanceladasPrevias,
     ] = await Promise.all([
-      req.prisma.purchaseItem.aggregate({
+      prisma.purchaseItem.aggregate({
         _sum: { quantity: true },
         where: {
           productId: productID,
@@ -537,7 +540,7 @@ router.get("/kardex-producto", async (req, res) => {
           },
         },
       }),
-      req.prisma.invoiceItem.aggregate({
+      prisma.invoiceItem.aggregate({
         _sum: { quantity: true },
         where: {
           productId: productID,
@@ -548,7 +551,7 @@ router.get("/kardex-producto", async (req, res) => {
           },
         },
       }),
-      req.prisma.invoiceItem.aggregate({
+      prisma.invoiceItem.aggregate({
         _sum: { quantity: true },
         where: {
           productId: productID,
@@ -559,7 +562,7 @@ router.get("/kardex-producto", async (req, res) => {
           },
         },
       }),
-      req.prisma.purchaseItem.aggregate({
+      prisma.purchaseItem.aggregate({
         _sum: { quantity: true },
         where: {
           productId: productID,
@@ -577,7 +580,7 @@ router.get("/kardex-producto", async (req, res) => {
       (ventasPrevias._sum.quantity || 0);
 
     const [compras, ventas] = await Promise.all([
-      req.prisma.purchaseItem.findMany({
+      prisma.purchaseItem.findMany({
         where: {
           productId: productID,
           purchase: {
@@ -588,7 +591,7 @@ router.get("/kardex-producto", async (req, res) => {
         },
         include: { purchase: { include: { caja: true } } },
       }),
-      req.prisma.invoiceItem.findMany({
+      prisma.invoiceItem.findMany({
         where: {
           productId: productID,
           invoice: {
@@ -693,12 +696,12 @@ router.get('/datos', async (req, res) => {
     return res.status(400).json({ message: 'Debe especificar los parámetros from y to (YYYY-MM-DD)' });
   }
   try {
-    const ventas = await req.prisma.invoice.findMany({
+    const ventas = await prisma.invoice.findMany({
       where: { createdAt: { gte: new Date(from), lte: new Date(to) }, estado: "EMITIDA" },
       include: { client: true },
       orderBy: { createdAt: 'asc' }
     });
-    const compras = await req.prisma.purchase.findMany({
+    const compras = await prisma.purchase.findMany({
       where: { createdAt: { gte: new Date(from), lte: new Date(to) }, estado: "EMITIDA" },
       include: { supplier: true },
       orderBy: { createdAt: 'asc' }

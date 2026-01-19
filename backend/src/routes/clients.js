@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
 router.get('/', async (req, res) => {
   try {
-    const clients = await req.prisma.client.findMany({ orderBy: { id: 'asc' } });
+    const clients = await prisma.client.findMany({ orderBy: { id: 'asc' } });
     res.json(clients);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -16,7 +19,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const { name, rtn, email, phone, address, creditLimit, creditBalance, creditDays } = req.body;
   try {
-    const client = await req.prisma.client.create({
+    const client = await prisma.client.create({
       data: {
         name,
         rtn,
@@ -38,7 +41,7 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { name, rtn, email, phone, address, creditLimit } = req.body;
   try {
-    const client = await req.prisma.client.update({
+    const client = await prisma.client.update({
       where: { id: parseInt(id) },
       data: {
         name,
@@ -61,7 +64,7 @@ router.delete('/:id',
   async (req, res) => {
   const { id } = req.params;
   try {
-    await req.prisma.client.delete({
+    await prisma.client.delete({
       where: { id: parseInt(id) }
     });
     res.status(204).send();
@@ -80,7 +83,7 @@ router.patch('/:id/renew-credit', async (req, res) => {
       return res.status(400).json({ error: 'El valor de extraDays debe ser un número positivo.' });
     }
 
-    const updatedClient = await req.prisma.client.update({
+    const updatedClient = await prisma.client.update({
       where: { id: Number(id) },
       data: {
         creditDays: { increment: daysToAdd },
@@ -111,7 +114,7 @@ router.patch('/:id/reset-credit-days', async (req, res) => {
       return res.status(400).json({ error: 'El valor de newCreditDays debe ser un número positivo.' });
     }
 
-    const updatedClient = await req.prisma.client.update({
+    const updatedClient = await prisma.client.update({
       where: { id: Number(id) },
       data: {
         creditDays: days,

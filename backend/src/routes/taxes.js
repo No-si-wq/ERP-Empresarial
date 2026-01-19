@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
@@ -9,12 +12,12 @@ router.get('/', async (req, res) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
   try {
     const [data, total] = await Promise.all([
-      req.prisma.tax.findMany({
+      prisma.tax.findMany({
         skip,
         take: parseInt(limit),
         orderBy: { id: 'asc' }
       }),
-      req.prisma.tax.count()
+      prisma.tax.count()
     ]);
     res.json({ data, total });
   } catch (err) {
@@ -29,7 +32,7 @@ router.post('/', async (req, res) => {
     return res.status(400).send('Faltan campos');
   }
   try {
-    const nuevo = await req.prisma.tax.create({
+    const nuevo = await prisma.tax.create({
       data: { clave, descripcion, percent }
     });
     res.status(201).json(nuevo);
@@ -45,7 +48,7 @@ router.put('/:id', async (req, res) => {
     return res.status(400).send('Faltan campos');
   }
   try {
-    const actualizado = await req.prisma.tax.update({
+    const actualizado = await prisma.tax.update({
       where: { id: parseInt(req.params.id) },
       data: { clave, descripcion, percent }
     });
@@ -61,7 +64,7 @@ router.delete('/:id',
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
   try {
-    await req.prisma.tax.delete({ where: { id: parseInt(req.params.id) } });
+    await prisma.tax.delete({ where: { id: parseInt(req.params.id) } });
     res.sendStatus(200);
   } catch (err) {
     res.status(500).send('Error al eliminar impuesto');
@@ -70,7 +73,7 @@ router.delete('/:id',
 
 router.get('/next-clave', async (req, res) => {
   try {
-    const existing = await req.prisma.tax.findMany({
+    const existing = await prisma.tax.findMany({
       select: { clave: true },
       orderBy: { clave: 'asc' }
     });
@@ -98,7 +101,7 @@ router.get('/check-clave/:clave', async (req, res) => {
   const { clave } = req.params;
 
   try {
-    const exists = await req.prisma.tax.findFirst({
+    const exists = await prisma.tax.findFirst({
       where: { clave: clave }
     });
 

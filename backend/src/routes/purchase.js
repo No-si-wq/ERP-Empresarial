@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 async function generarFolioPorCaja(tx, cajaId, tipo, incrementar = true) {
   const result = await tx.folioCounter.findUnique({
@@ -30,7 +33,7 @@ async function generarFolioPorCaja(tx, cajaId, tipo, incrementar = true) {
 
 router.get('/admin', async (req, res) => {
   try {
-    const purchases = await req.prisma.purchase.findMany({
+    const purchases = await prisma.purchase.findMany({
       include: { supplier: true, caja: true },
       orderBy: { id: 'asc' },
     });
@@ -58,7 +61,7 @@ router.get('/last-folio/:cajaId', async (req, res) => {
   if (!cajaId) return res.status(400).json({ error: "CajaId es obligatorio" });
 
   try {
-    const lastPurchase = await req.prisma.purchase.findFirst({
+    const lastPurchase = await prisma.purchase.findFirst({
       where: { cajaId: Number(cajaId) },
       orderBy: { id: 'desc' },
       select: { folio: true },
@@ -78,7 +81,7 @@ router.get('/:id', async (req, res) => {
   if (isNaN(compraId)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const compra = await req.prisma.purchase.findUnique({
+    const compra = await prisma.purchase.findUnique({
       where: { id: compraId },
       include: {
         supplier: true,
@@ -131,7 +134,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const productosDB = await Promise.all(productos.map(p => req.prisma.product.findUnique({ where: { id: p.productoId } })));
+    const productosDB = await Promise.all(productos.map(p => prisma.product.findUnique({ where: { id: p.productoId } })));
     for (let i = 0; i < productos.length; i++) {
       if (!productosDB[i]) return res.status(400).json({ error: `Producto ${productos[i].productoId} no existe` });
     }
@@ -152,7 +155,7 @@ router.post('/', async (req, res) => {
       };
     });
 
-    const createdPurchase = await req.prisma.$transaction(async (tx) => {
+    const createdPurchase = await prisma.$transaction(async (tx) => {
       const folio = await generarFolioPorCaja(tx, cajaId, 'purchase');
       const purchase = await tx.purchase.create({
         data: {
@@ -202,7 +205,7 @@ router.post('/pendiente', async (req, res) => {
   }
 
   try {
-    const productosDB = await Promise.all(productos.map(p => req.prisma.product.findUnique({ where: { id: p.productoId } })));
+    const productosDB = await Promise.all(productos.map(p => prisma.product.findUnique({ where: { id: p.productoId } })));
     for (let i = 0; i < productos.length; i++) if (!productosDB[i]) return res.status(400).json({ error: `Producto ${productos[i].productoId} no existe` });
 
     let total = 0;
@@ -221,7 +224,7 @@ router.post('/pendiente', async (req, res) => {
       };
     });
 
-    const newPurchase = await req.prisma.$transaction(async (tx) => {
+    const newPurchase = await prisma.$transaction(async (tx) => {
       const folio = await generarFolioPorCaja(tx, cajaId, 'purchase');
 
       return await tx.purchase.create({
@@ -256,10 +259,10 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const compraActual = await req.prisma.purchase.findUnique({ where: { id: compraId }, include: { items: true } });
+    const compraActual = await prisma.purchase.findUnique({ where: { id: compraId }, include: { items: true } });
     if (!compraActual) return res.status(404).json({ error: 'Compra no encontrada' });
 
-    const productosDB = await Promise.all(productos.map(p => req.prisma.product.findUnique({ where: { id: p.productoId } })));
+    const productosDB = await Promise.all(productos.map(p => prisma.product.findUnique({ where: { id: p.productoId } })));
     for (let i = 0; i < productos.length; i++) if (!productosDB[i]) return res.status(400).json({ error: `Producto ${productos[i].productoId} no existe` });
 
     let total = 0;
@@ -272,7 +275,7 @@ router.put('/:id', async (req, res) => {
       return { productId: p.productoId, quantity: p.cantidad, costBase, costFinal, subtotal };
     });
 
-    const updatedPurchase = await req.prisma.$transaction(async (tx) => {
+    const updatedPurchase = await prisma.$transaction(async (tx) => {
       if (compraActual.estado === 'EMITIDA') {
         for (const item of compraActual.items) await tx.product.update({ where: { id: item.productId }, data: { quantity: { increment: item.quantity } } });
       }
@@ -302,11 +305,11 @@ router.patch('/:id/cancel', async (req, res) => {
   if (isNaN(compraId)) return res.status(400).json({ error: "ID inválido" });
 
   try {
-    const compra = await req.prisma.purchase.findUnique({ where: { id: compraId }, include: { items: true } });
+    const compra = await prisma.purchase.findUnique({ where: { id: compraId }, include: { items: true } });
     if (!compra) return res.status(404).json({ error: "Compra no encontrada" });
     if (compra.estado === "CANCELADA") return res.status(400).json({ error: "La compra ya está cancelada" });
 
-    await req.prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       for (const item of compra.items) await tx.product.update({ where: { id: item.productId }, data: { quantity: { decrement: item.quantity } } });
 
       await tx.purchase.update({ where: { id: compraId }, data: { estado: "CANCELADA" } });

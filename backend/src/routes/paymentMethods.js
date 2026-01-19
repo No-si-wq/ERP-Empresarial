@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
@@ -8,7 +11,7 @@ function checkProtectedPaymentMethod(req, res, next) {
   const { id } = req.params;
   if (!id) return next();
 
-  req.prisma.payment_methods.findUnique({ where: { id: parseInt(id) } })
+  prisma.payment_methods.findUnique({ where: { id: parseInt(id) } })
     .then(method => {
       if (method && method.tipo === "CRED") {
         return res.status(400).json({ error: "El método de crédito (CRED) no puede modificarse ni eliminarse." });
@@ -24,13 +27,13 @@ router.get('/', async (req, res) => {
 
   try {
   const [data, total] = await Promise.all([
-    req.prisma.payment_methods.findMany({
+    prisma.payment_methods.findMany({
       skip,
       take: parseInt(limit),
       orderBy: { clave: 'asc' },
       include: { moneda: true } 
     }),
-    req.prisma.payment_methods.count()
+    prisma.payment_methods.count()
   ]);
 
     res.json({ data, total });
@@ -52,7 +55,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    await req.prisma.payment_methods.create({
+    await prisma.payment_methods.create({
       data: { clave, descripcion, tipo, monedaId: parseInt(monedaId) }
     });
 
@@ -72,7 +75,7 @@ router.put('/:id', checkProtectedPaymentMethod, async (req, res) => {
   try {
     const { id } = req.params;
     const { clave, descripcion, tipo, monedaId } = req.body;
-    await req.prisma.payment_methods.update({
+    await prisma.payment_methods.update({
       where: { id: parseInt(id) },
       data: { clave, descripcion, tipo, monedaId: parseInt(monedaId) }
     });
@@ -89,7 +92,7 @@ router.delete('/:id', checkProtectedPaymentMethod,
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
   try {
-    await req.prisma.payment_methods.delete({
+    await prisma.payment_methods.delete({
       where: { id: parseInt(req.params.id) }
     });
 
@@ -102,7 +105,7 @@ router.delete('/:id', checkProtectedPaymentMethod,
 
 router.get('/next-clave', async (req, res) => {
   try {
-    const existing = await req.prisma.payment_methods.findMany({
+    const existing = await prisma.payment_methods.findMany({
       select: { clave: true },
       orderBy: { clave: 'asc' }
     });
@@ -130,7 +133,7 @@ router.get('/check-clave/:clave', async (req, res) => {
   const { clave } = req.params;
 
   try {
-    const exists = await req.prisma.payment_methods.findFirst({
+    const exists = await prisma.payment_methods.findFirst({
       where: { clave: clave }
     });
 

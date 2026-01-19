@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
@@ -10,12 +13,12 @@ router.get('/', async (req, res) => {
 
   try {
     const [data, total] = await Promise.all([
-      req.prisma.currency.findMany({
+      prisma.currency.findMany({
         skip,
         take: parseInt(limit),
         orderBy: { id: 'asc' }
       }),
-      req.prisma.currency.count()
+      prisma.currency.count()
     ]);
     res.json({ data, total });
   } catch (err) {
@@ -31,7 +34,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const nueva = await req.prisma.currency.create({
+    const nueva = await prisma.currency.create({
       data: { clave, descripcion, abreviatura, tipoCambio }
     });
     res.status(201).json(nueva);
@@ -48,7 +51,7 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const actualizada = await req.prisma.currency.update({
+    const actualizada = await prisma.currency.update({
       where: { id: parseInt(req.params.id) },
       data: { clave, descripcion, abreviatura, tipoCambio }
     });
@@ -64,7 +67,7 @@ router.delete('/:id',
   checkPermission('PERMISSION_DELETE_ROLE'),
   async (req, res) => {
   try {
-    await req.prisma.currency.delete({ where: { id: parseInt(req.params.id) } });
+    await prisma.currency.delete({ where: { id: parseInt(req.params.id) } });
     res.sendStatus(200);
   } catch (err) {
     console.error(err);
@@ -74,7 +77,7 @@ router.delete('/:id',
 
 router.get('/next-clave', async (req, res) => {
   try {
-    const existing = await req.prisma.currency.findMany({
+    const existing = await prisma.currency.findMany({
       select: { clave: true },
       orderBy: { clave: 'asc' }
     });
@@ -102,7 +105,7 @@ router.get('/check-clave/:clave', async (req, res) => {
   const { clave } = req.params;
 
   try {
-    const exists = await req.prisma.currency.findFirst({
+    const exists = await prisma.currency.findFirst({
       where: { clave: clave }
     });
 
