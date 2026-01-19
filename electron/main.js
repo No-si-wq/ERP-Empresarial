@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
-const { PATHS, ensureAppDirs } = require("../backend/src/utils/appPath") ;
+const { PATHS, ensureAppDirs } = require("./appPath");
 
 log.transports.file.level = "info";
 log.transports.file.resolvePathFn = () => {
@@ -25,7 +25,6 @@ const isDev = !app.isPackaged;
 let mainWindow = null;
 let loadingWindow = null;
 let backendServer = null;
-let backend = null;
 let pendingMessages = [];
 let backendInfo = null;
 let backendProcess;
@@ -146,14 +145,27 @@ function requireBackendModule() {
   );
 }
 
+try {
+  ensureAppDirs();
+
+  process.env.O2_PATH_ROOT = PATHS.root;
+  process.env.O2_PATH_ENV = PATHS.env;
+  process.env.O2_PATH_JOBS = PATHS.jobs;
+  process.env.O2_PATH_BACKUPS = PATHS.backups;
+
+} catch (err) {
+  console.error("Error inicializando rutas de aplicación:", err);
+
+  app.quit();
+  process.exit(1);
+}
+
+const backend = requireBackendModule();
+
 async function startBackend() {
   if (backendServer) return backendServer;
 
-  backend = requireBackendModule();
-
-  ensureAppDirs();
-
-  const envBasePath = path.join(PATHS, ".env.production");
+  const envBasePath = path.join(PATHS.env, ".env.production");
   const encEnvPath = `${envBasePath}.enc`;
   const { applyEnv } = backend.env;
 

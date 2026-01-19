@@ -1,12 +1,21 @@
 const fs = require("fs");
 const path = require("path");
-const { PATHS, ensureAppDirs } = require("./appPath");
 
-const filePath = path.join(PATHS.jobs, "scheduled_jobs.json");
+const jobsDir =
+  process.env.O2_PATH_JOBS ||
+  path.resolve(process.cwd(), "data/jobs");
+
+const filePath = path.join(jobsDir, "scheduled_jobs.json");
+
+function ensureDir() {
+  if (!fs.existsSync(jobsDir)) {
+    fs.mkdirSync(jobsDir, { recursive: true });
+  }
+}
 
 function loadJobsFromDisk() {
   try {
-    ensureAppDirs();
+    ensureDir();
 
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, "[]", "utf8");
@@ -30,7 +39,7 @@ function loadJobsFromDisk() {
 
 function saveJobsToDisk(jobs) {
   try {
-    ensureAppDirs();
+    ensureDir();
     fs.writeFileSync(filePath, JSON.stringify(jobs, null, 2), "utf8");
   } catch (err) {
     console.error("[JobStorage] Error guardando jobs:", err);
