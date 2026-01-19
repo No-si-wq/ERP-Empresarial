@@ -1,6 +1,19 @@
 const path = require("path");
 const fs = require("fs-extra");
 
+const EXTERNALS = [
+  "@prisma/client",
+  "prisma",
+
+  "pg",
+
+  "pdfmake",
+  "@foliojs-fork/*",
+
+  "exceljs",
+  "multer"
+];
+
 exports.default = async function (context) {
   const resourcesPath = path.join(context.appOutDir, "resources");
 
@@ -33,45 +46,25 @@ exports.default = async function (context) {
     }
   );
 
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/@prisma"),
-    path.join(backendDest, "node_modules/@prisma")
-  );
+  for (const dep of EXTERNALS) {
+    const src = path.join(__dirname, "../backend/node_modules", dep);
+    const dest = path.join(backendDest, "node_modules", dep);
 
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/.prisma"),
-    path.join(backendDest, "node_modules/.prisma")
-  );
+    if (await fs.pathExists(src)) {
+      await fs.copy(src, dest);
+      console.log(`Copiado external: ${dep}`);
+    } else {
+      console.warn(`External no encontrado en node_modules: ${dep}`);
+    }
+  }
 
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/pg"),
-    path.join(backendDest, "node_modules/pg")
-  );
+  const prismaEngineSrc = path.join(__dirname, "../backend/node_modules/.prisma");
+  const prismaEngineDest = path.join(backendDest, "node_modules/.prisma");
 
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/pdfmake"),
-    path.join(backendDest, "node_modules/pdfmake")
-  );
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/@foliojs-fork/pdfkit"),
-    path.join(backendDest, "node_modules/@foliojs-fork/pdfkit")
-  );
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/@foliojs-fork/fontkit"),
-    path.join(backendDest, "node_modules/@foliojs-fork/fontkit")
-  );
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/exceljs"),
-    path.join(backendDest, "node_modules/exceljs")
-  );
-
-  await fs.copy(
-    path.join(__dirname, "../backend/node_modules/multer"),
-    path.join(backendDest, "node_modules/multer")
-  );
+  if (await fs.pathExists(prismaEngineSrc)) {
+    await fs.copy(prismaEngineSrc, prismaEngineDest);
+    console.log("Prisma engines copiados");
+  }
 
   await fs.copy(
     path.join(__dirname, "../frontend/dist"),
@@ -83,5 +76,5 @@ exports.default = async function (context) {
     assetsDest
   );
 
-  console.log("Producción limpia: backend mínimo, frontend y assets OK");
+  console.log("Producción limpia: backend bundleado, frontend y assets OK");
 };

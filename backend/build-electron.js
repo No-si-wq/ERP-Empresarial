@@ -6,13 +6,12 @@ require("esbuild").build({
   format: "cjs",
   target: "node18",
   external: [
-    "@prisma/client",
-    "prisma",
-    "pg",
-    "pdfmake",
-    "@foliojs-fork/pdfkit",
-    "@foliojs-fork/fontkit",
-    "exceljs",
-    "multer"
+  "@prisma/client",
+  "prisma",
+  "pg",
+  "pdfmake",
+  "@foliojs-fork/*",
+  "exceljs",
+  "multer"
   ],
 }).catch(() => process.exit(1));
