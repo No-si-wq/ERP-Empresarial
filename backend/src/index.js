@@ -32,5 +32,4 @@ module.exports = {
   seed,
   installEnv,
   cryptoEnv,
-  env: { applyEnv },
 };
