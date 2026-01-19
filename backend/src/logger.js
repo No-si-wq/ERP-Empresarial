@@ -3,13 +3,16 @@ const path = require("path");
 const morgan = require("morgan");
 
 function createMorganLogger() {
+  // DEV: consola
   if (process.env.NODE_ENV !== "production") {
     return morgan("dev");
   }
 
-  const logsDir =
-    process.env.O2_PATH_LOGS ||
-    path.resolve(process.cwd(), "data/logs");
+  const logsDir = process.env.O2_PATH_LOGS;
+
+  if (!logsDir) {
+    throw new Error("O2_PATH_LOGS no definido en producción");
+  }
 
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });

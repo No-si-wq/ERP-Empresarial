@@ -152,6 +152,7 @@ try {
   process.env.O2_PATH_ENV = PATHS.env;
   process.env.O2_PATH_JOBS = PATHS.jobs;
   process.env.O2_PATH_BACKUPS = PATHS.backups;
+  process.env.O2_PATH_LOGS = PATHS.logs;
 
 } catch (err) {
   console.error("Error inicializando rutas de aplicación:", err);
