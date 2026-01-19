@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { PATHS, ensureAppDirs } = require("../utils/appPaths");
+const { PATHS, ensureAppDirs } = require("./appPath");
 
 const filePath = path.join(PATHS.jobs, "scheduled_jobs.json");
 

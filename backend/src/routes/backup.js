@@ -7,14 +7,16 @@ const path = require("path");
 const { CronExpressionParser } = require("cron-parser");
 const stream = require("stream");
 const which = require("which");
+const { PATHS, ensureAppDirs } = require("../utils/appPath");
 
+ensureAppDirs();
 const router = express.Router();
 
 const scheduledJobs = {};
 const { loadJobsFromDisk, saveJobsToDisk } = require("../utils/jobStorage");
 let persistedJobs = loadJobsFromDisk();
 
-const BACKUP_DIR = path.resolve(__dirname, "../../backups");
+const BACKUP_DIR = path.join(PATHS.backups);
 const BACKUP_RETENTION_DAYS = Number(process.env.BACKUP_RETENTION_DAYS || 10);
 const DB_CONFIG = {
   DB_USER: process.env.DB_USER,
