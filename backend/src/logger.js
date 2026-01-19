@@ -1,0 +1,26 @@
+const fs = require("fs");
+const path = require("path");
+const morgan = require("morgan");
+
+function createMorganLogger() {
+  if (process.env.NODE_ENV !== "production") {
+    return morgan("dev");
+  }
+
+  const logsDir =
+    process.env.O2_PATH_LOGS ||
+    path.resolve(process.cwd(), "data/logs");
+
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+
+  const accessLogStream = fs.createWriteStream(
+    path.join(logsDir, "access.log"),
+    { flags: "a" }
+  );
+
+  return morgan("combined", { stream: accessLogStream });
+}
+
+module.exports = { createMorganLogger };

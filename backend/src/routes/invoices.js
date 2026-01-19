@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const prisma = require("../prisma");
+const { getPrisma } = require("../prisma");
+
+const prisma = getPrisma();
 
 async function generarFolioPorCaja(tx, cajaId, tipo) {
   const registro = await tx.folioCounter.findUnique({

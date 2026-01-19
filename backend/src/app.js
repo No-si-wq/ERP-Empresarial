@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const { createMorganLogger } = require("./logger");
 
-const prisma = require('./prisma');
+const { getPrisma } = require("./prisma");
+
+const prisma = getPrisma();
 
 const app = express();
 
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'production' : 'development'));
+app.use(createMorganLogger());
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
