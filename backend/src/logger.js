@@ -3,7 +3,6 @@ const path = require("path");
 const morgan = require("morgan");
 
 function createMorganLogger() {
-  // DEV: consola
   if (process.env.NODE_ENV !== "production") {
     return morgan("dev");
   }
