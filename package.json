@@ -12,7 +12,8 @@
     "start-dev": "concurrently -k \"npm:dev:react\" \"npm:dev:electron\"",
     "build:frontend": "npm run build --prefix frontend",
     "build:backend": "npm run build --prefix backend",
-    "build": "npm run build:frontend && npm run build:backend && electron-builder"
+    "build": "npm run build:frontend && npm run build:backend && electron-builder --publish always",
+    "dist": "electron-builder --publish always"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -25,12 +26,12 @@
     "appId": "com.o2systems.erp",
     "productName": "O2 System",
     "publish": [
-    {
-      "provider": "github",
-      "owner": "No-si-wq",
-      "repo": "ERP-Empresarial"
-    }
-  ],
+      {
+        "provider": "github",
+        "owner": "No-si-wq",
+        "repo": "ERP-Empresarial"
+      }
+    ],
     "directories": {
       "output": "dist",
       "buildResources": "resources"
