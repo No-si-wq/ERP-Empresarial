@@ -1,6 +1,6 @@
 {
   "name": "o2-systems",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Aplicación de escritorio ERP",
   "main": "electron/main.js",
   "author": "Owen Daniel de Jesus Lopez",
@@ -29,7 +29,8 @@
       {
         "provider": "github",
         "owner": "No-si-wq",
-        "repo": "ERP-Empresarial"
+        "repo": "ERP-Empresarial",
+        "releaseType": "release"
       }
     ],
     "directories": {
