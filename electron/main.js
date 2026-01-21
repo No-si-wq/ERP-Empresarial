@@ -361,15 +361,19 @@ ipcMain.handle("check-backend-health", async () => {
 });
 
 ipcMain.handle("check-for-updates", async () => {
-  if (!app.isPackaged) return { status: "dev" };
+  if (!app.isPackaged) {
+    notifyRenderer("update-status", { status: "dev" });
+    return;
+  }
+
   try {
-    autoUpdater.checkForUpdates();
-    return { status: "checking" };
+    notifyRenderer("update-status", { status: "checking" });
+    await autoUpdater.checkForUpdates();
   } catch (err) {
-    if (err.message.includes("No published version")) {
-      return { status: "none" }
-    }
-    throw err;
+    notifyRenderer("update-status", {
+      status: "error",
+      message: err.message,
+    });
   }
 });
 
@@ -484,7 +488,6 @@ app.whenReady().then(() => {
 
     if (app.isPackaged) {
       initAutoUpdater();
-      autoUpdater.checkForUpdates();
     }
 
   } catch (err) {
