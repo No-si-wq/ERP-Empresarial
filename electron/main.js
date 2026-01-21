@@ -284,6 +284,14 @@ function createMainWindow() {
     console.error("did-fail-load:", code, desc);
   });
 
+  mainWindow.webContents.on("did-finish-load", () => {
+    pendingMessages.forEach(({ channel, payload }) => {
+      mainWindow.webContents.send(channel, payload);
+    });
+
+    pendingMessages.length = 0;
+  });
+
   mainWindow.webContents.on("render-process-gone", (_, details) => {
     console.error("renderer gone:", details);
   });
@@ -302,20 +310,12 @@ function createMainWindow() {
     mainWindow.show();
   });
 
-  mainWindow.webContents.on("did-finish-load", () => {
-    pendingMessages.forEach(({ channel, payload }) => {
-      mainWindow.webContents.send(channel, payload);
-    });
-
-    pendingMessages.length = 0;
-  });
-
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
-ipcMain.handle("get-app-version", () => app.getVersion());
+ipcMain.handle("get-app-version", () =>  app.getVersion());
 
 ipcMain.handle("get-backend-info", () => {
   return backendInfo;

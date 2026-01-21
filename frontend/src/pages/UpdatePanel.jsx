@@ -21,7 +21,7 @@ const { TabPane } = Tabs;
 const { Text, Title } = Typography;
 
 export default function UpdatePanel() {
-  const { status, progress, version, error, check, download, install } = useUpdater();
+  const { status, progress, version, installedVersion, error, check, download, install } = useUpdater();
   const navigate = useNavigate();
 
   const statusColor = {
@@ -113,6 +113,9 @@ export default function UpdatePanel() {
               }}
             >
               <Title level={5}>Estado del sistema</Title>
+              <Text type="secondary">
+                Versión instalada: <b>{installedVersion || "—"}</b>
+              </Text>
 
               <Space direction="vertical" style={{ width: "100%" }} size="middle">
                 <div>
@@ -131,8 +134,8 @@ export default function UpdatePanel() {
                   <Alert
                     type="info"
                     showIcon
-                    message={`Nueva versión disponible (${version})`}
-                    description="Puedes descargarla ahora o hacerlo más tarde."
+                    message={`Actualizacion disponible`}
+                    description={`Instalada ${installedVersion} -> Nueva: ${version}`}
                   />
                 )}
 
@@ -150,7 +153,7 @@ export default function UpdatePanel() {
                     type="success"
                     showIcon
                     message="Sistema actualizado"
-                    description="No hay actualizaciones disponibles."
+                    description={`Version actual: ${installedVersion} esta al dia`}
                   />
                 )}
 
