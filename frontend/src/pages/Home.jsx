@@ -1,10 +1,11 @@
 import { usePermissions } from "../hooks/usePermissions";
+import { AppstoreAddOutlined } from "@ant-design/icons";
 import React, { useContext, useState } from "react";
 import { Layout, Menu, Button } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../hooks/AuthProvider";
 import { LogoutOutlined } from "@ant-design/icons";
-import { Typography } from 'antd';
+import { Typography, Space } from 'antd';
 
 const Home = () => {
   const { handleLogout } = useContext(AuthContext);
@@ -102,18 +103,44 @@ const Home = () => {
           <div
             style={{
               background: "#fff",
-              padding: 48,
-              borderRadius: 12,
-              boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+              padding: "60px 40px",
+              borderRadius: 20,
+              boxShadow: "0 10px 40px rgba(0,0,0,0.04)",
               textAlign: "center",
-              maxWidth: 600,
+              maxWidth: 550,
               width: "100%",
+              border: "1px solid #f0f0f0"
             }}
           >
-            <Title level={2}>¡Bienvenido al ERP!</Title>
-            <Text type="secondary">
-              Selecciona un módulo o una acción en el menú superior para comenzar a trabajar en tu sistema.
-            </Text>
+            <div style={{
+              width: 80,
+              height: 80,
+              background: "#e6f7ff",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 24x auto",
+            }}>
+              <AppstoreAddOutlined />
+            </div>
+
+            <Title level={2} style={{ marginBottom: 12, fontWeight: 700, color: "#262626" }}>
+                ¡Hola de nuevo!
+              </Title>
+              
+              <Text type="secondary" style={{ fontSize: 16, display: "block", lineHeight: "1.6" }}>
+                Tu panel de control está listo. 
+                <span style={{ display: "block", marginTop: 8 }}>
+                  Utiliza el menú superior para navegar entre los módulos y gestionar tus operaciones.
+                </span>
+              </Text>
+
+              <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid #f5f5f5" }}>
+                <Text strong style={{ color: "#8c8c8c", fontSize: 12, textTransform: "uppercase", letterSpacing: 1 }}>
+                  Sistema de emprendimiento 
+                </Text>
+              </div>
           </div>
         )}
       </Content>

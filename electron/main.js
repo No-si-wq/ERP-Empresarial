@@ -44,6 +44,14 @@ if (app.isPackaged) {
   });
 }
 
+function notifyRenderer(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  } else {
+    pendingMessages.push({ channel, payload });
+  }
+}
+
 log.transports.file.level = "info";
 autoUpdater.logger = log;
 autoUpdater.autoDownload = false;
@@ -88,14 +96,6 @@ function initAutoUpdater() {
       message: err.message
     });
   });
-}
-
-function notifyRenderer(channel, payload) {
-  if (mainWindow?.webContents) {
-    mainWindow.webContents.send(channel, payload);
-  } else {
-    pendingMessages.push({ channel, payload });
-  }
 }
 
 function getInstallStatePath() {
@@ -300,6 +300,14 @@ function createMainWindow() {
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    pendingMessages.forEach(({ channel, payload }) => {
+      mainWindow.webContents.send(channel, payload);
+    });
+
+    pendingMessages.length = 0;
   });
 
   mainWindow.on("closed", () => {
