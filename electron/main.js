@@ -356,8 +356,9 @@ ipcMain.handle("check-backend-health", async () => {
 });
 
 ipcMain.handle("check-for-updates", async () => {
-  if (!app.isPackaged) return { dev: true };
-  return autoUpdater.checkForUpdates();
+  if (!app.isPackaged) return { status: "dev" };
+  autoUpdater.checkForUpdates();
+  return { status: "checking" };
 });
 
 ipcMain.handle("download-update", async () => {

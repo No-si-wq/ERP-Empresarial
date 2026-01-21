@@ -6,23 +6,33 @@ export function UpdateProvider({ children }) {
   const [status, setStatus] = useState("idle");
   const [progress, setProgress] = useState(0);
   const [version, setVersion] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!window.updater) return;
 
-    window.updater.onStatus(data => {
+    window.updater.check();
+
+    const offStatus = window.updater.onStatus(data => {
       setStatus(data.status);
       if (data.version) setVersion(data.version);
+      if (data.message) setError(data.message);
     });
 
-    window.updater.onProgress(data => {
+    const offProgress = window.updater.onProgress(data => {
+      setStatus("downloading");
       setProgress(data.percent);
     });
+
+    return () => {
+      offStatus?.();
+      offProgress?.();
+    };
   }, []);
 
-  const check = () => window.updater.check();
-  const download = () => window.updater.download();
-  const install = () => window.updater.install();
+  const check = () => window.updater?.check();
+  const download = () => window.updater?.download();
+  const install = () => window.updater?.install();
 
   return (
     <UpdateContext.Provider
@@ -30,6 +40,7 @@ export function UpdateProvider({ children }) {
         status,
         progress,
         version,
+        error,
         check,
         download,
         install,

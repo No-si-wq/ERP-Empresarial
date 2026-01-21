@@ -6,9 +6,22 @@ module.exports = {
   download: () => ipcRenderer.invoke("download-update"),
 
   install: () => ipcRenderer.invoke("install-update"),
-  
-  onStatus: cb =>
-    ipcRenderer.on("update-status", (_, data) => cb(data)),
-  onProgress: cb =>
-    ipcRenderer.on("update-progress", (_, data) => cb(data)),
+
+  onStatus: cb => {
+    const listener = (_, data) => cb(data);
+    ipcRenderer.on("update-status", listener);
+
+    return () => {
+      ipcRenderer.removeListener("update-status", listener);
+    };
+  },
+
+  onProgress: cb => {
+    const listener = (_, data) => cb(data);
+    ipcRenderer.on("update-progress", listener);
+
+    return () => {
+      ipcRenderer.removeListener("update-progress", listener);
+    };
+  },
 };

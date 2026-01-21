@@ -21,7 +21,7 @@ const { TabPane } = Tabs;
 const { Text, Title } = Typography;
 
 export default function UpdatePanel() {
-  const { status, progress, version, check, download, install } = useUpdater();
+  const { status, progress, version, error, check, download, install } = useUpdater();
   const navigate = useNavigate();
 
   const statusColor = {
@@ -159,7 +159,15 @@ export default function UpdatePanel() {
                     type="error"
                     showIcon
                     message="Error al buscar actualizaciones"
-                    description="Revisa tu conexión o intenta más tarde."
+                    description={
+                      <>
+                        <div>
+                          {error || 
+                            "Revisa tu conexión o intenta más tarde."
+                          }
+                        </div>
+                      </>
+                    }
                   />
                 )}
 
