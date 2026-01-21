@@ -78,6 +78,11 @@ function initAutoUpdater() {
   });
 
   autoUpdater.on("error", err => {
+    if (err.message.includes("No published version")) {
+      notifyRenderer("update-status", { status: "none" });
+      return;
+    }
+
     notifyRenderer("update-status", {
       status: "error",
       message: err.message
@@ -357,8 +362,15 @@ ipcMain.handle("check-backend-health", async () => {
 
 ipcMain.handle("check-for-updates", async () => {
   if (!app.isPackaged) return { status: "dev" };
-  autoUpdater.checkForUpdates();
-  return { status: "checking" };
+  try {
+    autoUpdater.checkForUpdates();
+    return { status: "checking" };
+  } catch (err) {
+    if (err.message.includes("No published version")) {
+      return { status: "none" }
+    }
+    throw err;
+  }
 });
 
 ipcMain.handle("download-update", async () => {
