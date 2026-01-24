@@ -210,7 +210,7 @@ async function startBackend() {
 
   notifyRenderer("loader-status", "Iniciando servicios…");
 
-  backendServer = backend.startBackend(0);
+  backendServer = await backend.startBackend(0);
 
   await new Promise((resolve, reject) => {
     backendServer.once("listening", resolve);
