@@ -2,9 +2,6 @@ const { execFile } = require("child_process");
 const path = require("path");
 
 function runPrismaMigrations() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL no definido");
-  }
 
   console.log("Ejecutando migraciones Prisma…");
 
