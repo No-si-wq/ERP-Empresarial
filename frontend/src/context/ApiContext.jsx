@@ -11,13 +11,24 @@ export function ApiProvider({ children }) {
   const checkHealth = useCallback(async (baseUrl, retries = 5) => {
     for (let i = 0; i < retries; i++) {
       try {
-        const res = await fetch(`${baseUrl}/health`);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3000);
+
+        const res = await fetch(`${baseUrl}/health`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
         if (!res.ok) throw new Error("Health failed");
 
         setHealthStatus("ok");
         setReady(true);
         return;
-      } catch {
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.warn("Health check falló:", err);
+        }
+
         setHealthStatus("checking");
         setReady(false);
         await new Promise(r => setTimeout(r, 1000));
