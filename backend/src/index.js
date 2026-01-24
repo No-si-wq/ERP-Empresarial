@@ -7,7 +7,7 @@ const seed = require("./prisma/seed");
 const installEnv = require("./envInstaller");
 const cryptoEnv = require("./cryptoEnv");
 
-function startBackend(port = 0) {
+async function startBackend(port = 0) {
   const server = http.createServer(app);
 
   return new Promise((resolve, reject) => {

@@ -212,11 +212,6 @@ async function startBackend() {
 
   backendServer = await backend.startBackend(0);
 
-  await new Promise((resolve, reject) => {
-    backendServer.once("listening", resolve);
-    backendServer.once("error", reject);
-  });
-
   const { port } = backendServer.address();
 
   notifyRenderer("backend-status", { status: "up" });
