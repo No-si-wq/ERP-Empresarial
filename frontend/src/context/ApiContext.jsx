@@ -8,16 +8,24 @@ export function ApiProvider({ children }) {
   const [ready, setReady] = useState(false);
   const [healthStatus, setHealthStatus] = useState("checking");
 
-  const checkHealth = useCallback(async (baseUrl) => {
-    try {
-      const res = await fetch(`${baseUrl}/health`);
-      if (!res.ok) throw new Error("Health failed");
-      setHealthStatus("ok");
-      setReady(true);
-    } catch {
-      setHealthStatus("error");
-      setReady(false);
+  const checkHealth = useCallback(async (baseUrl, retries = 5) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(`${baseUrl}/health`);
+        if (!res.ok) throw new Error("Health failed");
+
+        setHealthStatus("ok");
+        setReady(true);
+        return;
+      } catch {
+        setHealthStatus("checking");
+        setReady(false);
+        await new Promise(r => setTimeout(r, 1000));
+      }
     }
+
+    setHealthStatus("error");
+    setReady(false);
   }, []);
 
   useEffect(() => {
@@ -35,6 +43,10 @@ export function ApiProvider({ children }) {
       const url = `http://localhost:${port}`;
       apiClient.defaults.baseURL = url;
       setApiBaseUrl(url);
+
+      setHealthStatus("checking");
+      setReady(false);
+
       checkHealth(url);
     };
 
