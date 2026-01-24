@@ -45,14 +45,15 @@
     "afterPack": "electron/afterPack.js",
     "win": {
       "target": "nsis",
-      "icon": "build/favicon.ico"
+      "icon": "assets/favicon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "include": "build/installer.nsh"
     }
   },
   "dependencies": {
