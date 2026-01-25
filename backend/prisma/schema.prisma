@@ -51,11 +51,11 @@ model Client {
   address        String?
   createdAt      DateTime        @default(now())
   rtn            String          @unique
-  creditBalance  Float           @default(0)
   creditDays     Int             @default(0)
-  creditLimit    Float           @default(0)
+  creditBalance  Decimal         @default(0)
+  creditLimit    Decimal         @default(0)
   lastCreditDate DateTime?
-  updatedAt      DateTime?       @updatedAt
+  updatedAt      DateTime        @updatedAt
   payments       ClientPayment[]
   invoices       Invoice[]
 

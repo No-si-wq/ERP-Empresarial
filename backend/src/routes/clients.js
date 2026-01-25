@@ -5,6 +5,51 @@ const { getPrisma } = require("../prisma");
 const { authenticateToken } = require('../../middlewares/authMiddleware');
 const checkPermission = require('../../middlewares/checkPermission');
 
+function parsePositiveInt(value, fieldName) {
+  const num = Number(value);
+
+  if (!Number.isInteger(num) || num <= 0) {
+    const error = new Error(
+      `El valor de ${fieldName} debe ser un número entero positivo.`
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  return num;
+}
+
+function parseClientId(id) {
+  const clientId = Number(id);
+
+  if (!Number.isInteger(clientId)) {
+    const error = new Error('ID de cliente inválido.');
+    error.status = 400;
+    throw error;
+  }
+
+  return clientId;
+}
+
+function withPrismaErrorHandling(handler) {
+  return async (req, res) => {
+    try {
+      await handler(req, res);
+    } catch (error) {
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'Cliente no encontrado.' });
+      }
+
+      const status = error.status || 500;
+      const message =
+        status === 500 ? 'Error interno del servidor.' : error.message;
+
+      console.error(error);
+      res.status(status).json({ error: message });
+    }
+  };
+}
+
 router.get('/', async (req, res) => {
   const prisma = getPrisma();
   try {
@@ -76,67 +121,50 @@ router.delete('/:id',
   }
 );
 
-router.patch('/:id/renew-credit', async (req, res) => {
-  const prisma = getPrisma();
-  const { id } = req.params;
-  const { extraDays } = req.body;
+router.patch(
+  '/:id/renew-credit',
+  withPrismaErrorHandling(async (req, res) => {
+    const prisma = getPrisma();
 
-  try {
-    const daysToAdd = Number(extraDays);
-    if (isNaN(daysToAdd) || daysToAdd <= 0) {
-      return res.status(400).json({ error: 'El valor de extraDays debe ser un número positivo.' });
-    }
+    const clientId = parseClientId(req.params.id);
+    const daysToAdd = parsePositiveInt(req.body.extraDays, 'extraDays');
 
     const updatedClient = await prisma.client.update({
-      where: { id: Number(id) },
+      where: { id: clientId },
       data: {
         creditDays: { increment: daysToAdd },
-        creditType: 'RENOVADO'
+        lastCreditDate: new Date()
       }
     });
 
     res.json({
-      message: `Límite de crédito renovado por ${daysToAdd} días adicionales.`,
+      message: `Crédito renovado por ${daysToAdd} días adicionales.`,
       client: updatedClient
     });
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Cliente no encontrado.' });
-    }
-    res.status(400).json({ error: error.message });
-  }
-});
+  })
+);
 
+router.patch(
+  '/:id/reset-credit-days',
+  withPrismaErrorHandling(async (req, res) => {
+    const prisma = getPrisma();
 
-router.patch('/:id/reset-credit-days', async (req, res) => {
-  const prisma = getPrisma();
-  const { id } = req.params;
-  const { newCreditDays } = req.body;
-
-  try {
-    const days = Number(newCreditDays);
-    if (isNaN(days) || days <= 0) {
-      return res.status(400).json({ error: 'El valor de newCreditDays debe ser un número positivo.' });
-    }
+    const clientId = parseClientId(req.params.id);
+    const days = parsePositiveInt(req.body.newCreditDays, 'newCreditDays');
 
     const updatedClient = await prisma.client.update({
-      where: { id: Number(id) },
+      where: { id: clientId },
       data: {
         creditDays: days,
-        creditType: 'RESTABLECIDO'
+        lastCreditDate: new Date()
       }
     });
 
     res.json({
-      message: `Límite de crédito restablecido a ${days} días.`,
+      message: `Días de crédito restablecidos a ${days}.`,
       client: updatedClient
     });
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Cliente no encontrado.' });
-    }
-    res.status(400).json({ error: error.message });
-  }
-});
+  })
+);
 
 module.exports = router;
